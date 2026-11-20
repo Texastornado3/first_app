@@ -1,0 +1,8 @@
+# Prompt log
+
+- Asked to set up a single-file web app project layout with root-level `AGENTS.md`, `spec.md`, `prompts.md`, and `index.html`, plus four numbered folders with short READMEs. Created the requested scaffold and documented the file-placement rule in `AGENTS.md`. Worked: yes; verified the requested files and folders exist.
+- Asked to update only the Inputs section with agreed defaults, inclusive ranges, and controls, and log the change. Updated `spec.md` and documented this change here. Worked: yes; verified the updated section and prompt log.
+- Asked to review only Calculations and Validation for formula, unit, rounding, truck rotation, and schedule correctness. Reviewed all three examples; spec unchanged, with findings and recommended clarifications provided. Worked: yes.
+- Asked to clarify truck cycle time, fractional-minute handling, arrival spacing, and inherited defaults while preserving validation results. Updated those details in `spec.md` and recorded the change here; no application code or other files were changed. Worked: yes; verified the revised calculations and validation text.
+- Asked to clarify Outputs, Look and Feel, Validation, and Out of Scope while preserving the original validation examples and results. Updated only those sections in `spec.md` and recorded the changes here. Worked: yes; no application code or `index.html` changes.
+- Asked to review the entire spec for remaining requirements and inconsistencies, fix them, log the changes, and commit without building. Clarified geometry mode and area rules, jobsite-local time, rounding ties, reproducible boundary checks, and save/export limits. Worked: yes; committed the documentation changes without modifying application code or `index.html`.
