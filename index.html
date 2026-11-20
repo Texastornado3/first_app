@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Static layout mockup for a concrete pour planning app.">
     <title>Concrete Pour Planner</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
       :root {
         color-scheme: light;
@@ -260,23 +261,31 @@
         background: #e7ece3;
       }
 
-      .map-art {
+      #leaflet-map {
         display: block;
         width: 100%;
         height: 330px;
+        background: #e7ece3;
       }
 
-      .map-tag,
-      .map-tools,
-      .map-compass {
+      .leaflet-container {
+        font: inherit;
+      }
+
+      .leaflet-control-attribution {
+        font-size: 9px;
+      }
+
+      .map-tag {
         position: absolute;
-        z-index: 1;
+        z-index: 650;
       }
 
       .map-tag {
         top: 12px;
         left: 12px;
         max-width: calc(100% - 24px);
+        pointer-events: none;
         padding: 7px 10px;
         border: 1px solid rgba(218, 226, 221, 0.9);
         border-radius: 8px;
@@ -286,38 +295,59 @@
         font-weight: 650;
       }
 
-      .map-tools {
-        top: 12px;
-        right: 12px;
-        display: grid;
-        gap: 5px;
-      }
-
-      .map-tools span {
-        display: grid;
-        width: 30px;
-        height: 30px;
-        place-items: center;
-        border: 1px solid #dce3df;
-        border-radius: 7px;
-        background: #fff;
-        color: #34443e;
-        font-size: 18px;
-        font-weight: 600;
-      }
-
-      .map-compass {
-        right: 14px;
-        bottom: 13px;
-        display: grid;
-        width: 28px;
-        height: 28px;
-        place-items: center;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.92);
-        color: #51615b;
+      .map-feedback {
+        min-height: 17px;
+        margin: -5px 17px 13px;
+        color: var(--muted);
         font-size: 11px;
-        font-weight: 800;
+      }
+
+      .map-feedback.error {
+        color: #8a2119;
+      }
+
+      .map-measurement-icon {
+        border: 0;
+        background: transparent;
+      }
+
+      .map-measurement-label {
+        display: grid;
+        min-width: 124px;
+        gap: 2px;
+        padding: 7px 9px;
+        border: 1px solid #dce8e4;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 2px 8px rgba(27, 46, 61, 0.16);
+        color: #52635d;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .map-measurement-label strong {
+        color: #165e57;
+        font-size: 12px;
+      }
+
+      .map-measurement-label span {
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .slab-vertex-icon {
+        border: 0;
+        background: transparent;
+      }
+
+      .slab-vertex-icon span {
+        display: block;
+        width: 16px;
+        height: 16px;
+        border: 3px solid #0f716b;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 5px rgba(20, 50, 55, 0.35);
       }
 
       .map-note {
@@ -899,7 +929,7 @@
           min-height: 250px;
         }
 
-        .map-art {
+        #leaflet-map {
           height: 270px;
         }
 
@@ -992,7 +1022,7 @@
       </div>
       <div class="topbar-meta">
         <span class="location-pill"><span class="location-dot"></span>BYU campus · Provo, UT</span>
-        <span class="mockup-pill">Stage 2 calculations</span>
+        <span class="mockup-pill">Stage 3 map</span>
       </div>
     </header>
 
@@ -1002,7 +1032,7 @@
           <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
           <path d="M12 10.5v5M12 7.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <p><strong>Typed-dimension calculations are active.</strong> The map outline and truck timeline are static samples; map drawing and order copying are not active in this stage.</p>
+        <p><strong>Interactive slab mapping is active.</strong> Typed and drawn slab areas feed the calculations; the truck timeline remains a static sample in this stage.</p>
       </aside>
 
       <div class="workspace">
@@ -1015,10 +1045,10 @@
               </div>
               <div class="map-toolbar">
                 <div class="mode-switch" aria-label="Geometry entry mode">
-                  <button type="button" aria-pressed="false" disabled>Draw on map</button>
-                  <button type="button" aria-pressed="true" disabled>Enter dimensions</button>
+                  <button type="button" data-geometry-mode="map" aria-pressed="false">Draw on map</button>
+                  <button type="button" data-geometry-mode="dimensions" aria-pressed="true">Enter dimensions</button>
                 </div>
-                <button class="draw-button" type="button" aria-label="Draw slab (available in a later stage)" disabled>
+                <button class="draw-button" id="draw-slab-button" type="button" aria-pressed="false" aria-label="Draw slab">
                   <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                     <path d="m4 14.8-.7 2.8 2.8-.7L16.5 6.5 13.5 3.5 4 14.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
                     <path d="m11.9 5.1 3 3" stroke="currentColor" stroke-width="1.5"/>
@@ -1028,55 +1058,15 @@
               </div>
             </div>
 
-            <div class="map-frame" role="img" aria-label="Static map illustration centered near BYU campus with a 40 by 60 foot slab outline">
-              <svg class="map-art" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-                <rect width="900" height="560" fill="#e6ebdf"/>
-                <path d="M0 75 250 0h145l-56 113L0 190ZM630 0h270v148l-214 40-96-89ZM0 416l228-83 111 126-139 101H0ZM655 405l245-80v235H594Z" fill="#d8e5d0"/>
-                <path d="M0 250h900M0 380h900M245 0v560M610 0v560" stroke="#fffdf8" stroke-width="33"/>
-                <path d="M0 250h900M0 380h900M245 0v560M610 0v560" stroke="#d3d8d1" stroke-width="2"/>
-                <path d="M66 0v560M410 0v560M790 0v560M0 130h900M0 490h900" stroke="#f8f7f1" stroke-width="17"/>
-                <path d="M66 0v560M410 0v560M790 0v560M0 130h900M0 490h900" stroke="#d5d9d3" stroke-width="1.5"/>
-                <g fill="#c6d6c1" opacity=".8">
-                  <rect x="95" y="158" width="104" height="60" rx="8"/>
-                  <rect x="285" y="155" width="103" height="64" rx="8"/>
-                  <rect x="447" y="155" width="133" height="64" rx="8"/>
-                  <rect x="664" y="158" width="101" height="61" rx="8"/>
-                  <rect x="103" y="284" width="94" height="70" rx="8"/>
-                  <rect x="286" y="282" width="99" height="72" rx="8"/>
-                  <rect x="451" y="280" width="130" height="75" rx="8"/>
-                  <rect x="667" y="283" width="93" height="70" rx="8"/>
-                </g>
-                <g fill="#7b8982" font-family="system-ui, sans-serif" font-size="12" font-weight="650" letter-spacing="1.5">
-                  <text x="286" y="244">UNIVERSITY AVE</text>
-                  <text x="284" y="374">CAMPUS DRIVE</text>
-                  <text x="78" y="118">CAMPUS</text>
-                  <text x="674" y="470">PROVO</text>
-                </g>
-                <path d="M0 451c150-42 254-17 366-58s239-79 534-72" fill="none" stroke="#d7c8aa" stroke-width="11"/>
-                <path d="M0 451c150-42 254-17 366-58s239-79 534-72" fill="none" stroke="#fff9ee" stroke-width="7"/>
-                <g>
-                  <path d="M333 186h205v147H333z" fill="#6cc5b9" fill-opacity=".29" stroke="#0f716b" stroke-width="4"/>
-                  <circle cx="333" cy="186" r="8" fill="#fff" stroke="#0f716b" stroke-width="4"/>
-                  <circle cx="538" cy="186" r="8" fill="#fff" stroke="#0f716b" stroke-width="4"/>
-                  <circle cx="538" cy="333" r="8" fill="#fff" stroke="#0f716b" stroke-width="4"/>
-                  <circle cx="333" cy="333" r="8" fill="#fff" stroke="#0f716b" stroke-width="4"/>
-                  <rect x="376" y="232" width="120" height="60" rx="8" fill="#fff" stroke="#dce8e4"/>
-                  <text x="436" y="247" text-anchor="middle" fill="#52635d" font-family="system-ui, sans-serif" font-size="8" font-weight="700" letter-spacing=".7">SLAB AREA</text>
-                  <text id="area-label-output" x="436" y="262" text-anchor="middle" fill="#165e57" font-family="system-ui, sans-serif" font-size="11" font-weight="800">2,400 ft²</text>
-                  <text id="order-label-output" x="436" y="279" text-anchor="middle" fill="#52635d" font-family="system-ui, sans-serif" font-size="8" font-weight="750">ORDER 47.0 cy</text>
-                </g>
-              </svg>
-              <div class="map-tag">Map preview · imagery loads in a later stage</div>
-              <div class="map-tools" aria-hidden="true">
-                <span>+</span>
-                <span>&minus;</span>
-              </div>
-              <div class="map-compass" aria-hidden="true">N</div>
+            <div class="map-frame">
+              <div id="leaflet-map" class="map-art" role="application" aria-label="Interactive satellite map for drawing a slab outline"></div>
+              <div class="map-tag" id="map-imagery-status" role="status" aria-live="polite">Loading Esri World Imagery...</div>
             </div>
             <div class="map-note">
-              <strong>Static 40 ft &times; 60 ft illustration</strong>
+              <strong id="geometry-caption">Rectangle from typed dimensions</strong>
               <span class="map-legend"><span class="outline-key"></span>Slab outline</span>
             </div>
+            <p class="map-feedback" id="map-feedback" role="status" aria-live="polite">Edit the dimensions or choose Draw on map to outline the slab.</p>
           </section>
 
           <section class="panel inputs-panel" aria-labelledby="inputs-title">
@@ -1318,10 +1308,11 @@ Arrival spacing: every 20 minutes</pre>
       </div>
 
       <footer class="page-foot">
-        <span>Concrete pour planner · Stage 2 calculations</span>
-        <span>Map and schedule remain static samples</span>
+        <span>Concrete pour planner · Stage 3 map</span>
+        <span>Truck schedule remains a static sample</span>
       </footer>
     </main>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
       const inputs = {
         length: document.getElementById("slab-length"),
@@ -1343,11 +1334,16 @@ Arrival spacing: every 20 minutes</pre>
         finishTime: document.getElementById("finish-time-output"),
         arrivalSpacing: document.getElementById("arrival-spacing-output"),
         orderSummary: document.getElementById("order-summary-output"),
-        mapArea: document.getElementById("area-label-output"),
-        mapOrder: document.getElementById("order-label-output"),
-        mapFrame: document.querySelector(".map-frame"),
+        mapStatus: document.getElementById("map-imagery-status"),
+        mapFeedback: document.getElementById("map-feedback"),
+        geometryCaption: document.getElementById("geometry-caption"),
         inputErrors: document.getElementById("input-errors")
       };
+
+      const geometryModeButtons = [
+        ...document.querySelectorAll("[data-geometry-mode]")
+      ];
+      const drawSlabButton = document.getElementById("draw-slab-button");
 
       const inputLabels = {
         length: "Length",
@@ -1359,6 +1355,42 @@ Arrival spacing: every 20 minutes</pre>
         travelTime: "One-way travel time",
         washoutTime: "Washout and reload"
       };
+
+      const campusCenter = [40.2518, -111.6493];
+      const polygonEarthRadiusMeters = 6378137;
+      const squareMetersToSquareFeet = 10.7639;
+      const rectangleStyle = {
+        color: "#0f716b",
+        weight: 3,
+        fillColor: "#6cc5b9",
+        fillOpacity: 0.24
+      };
+      const polygonStyle = {
+        color: "#0f716b",
+        weight: 3,
+        fillColor: "#6cc5b9",
+        fillOpacity: 0.24
+      };
+
+      let leafletMap = null;
+      let activeGeometryMode = "dimensions";
+      let dimensionCenter = null;
+      let dimensionRectangle = null;
+      let drawnPolygonVertices = null;
+      let polygonLayer = null;
+      let polygonVertexMarkers = [];
+      let measurementMarker = null;
+      let drawingPreviewLayer = null;
+      let drawingPreviewMarkers = [];
+      let drawingVertices = [];
+      let isDrawingPolygon = false;
+      let geometryError = "";
+      let lastValidPolygonVertices = null;
+
+      function setMapFeedback(message, isError = false) {
+        outputElements.mapFeedback.textContent = message;
+        outputElements.mapFeedback.classList.toggle("error", isError);
+      }
 
       function readNumberInput(input, label) {
         const rawValue = input.value.trim();
@@ -1390,6 +1422,12 @@ Arrival spacing: every 20 minutes</pre>
         const errors = [];
 
         for (const [key, input] of Object.entries(inputs)) {
+          if (activeGeometryMode === "map" && (key === "length" || key === "width")) {
+            input.classList.remove("invalid");
+            input.setAttribute("aria-invalid", "false");
+            continue;
+          }
+
           if (key === "firstArrival") {
             const arrivalMinutes = parseTimeOfDay(input.value);
             input.classList.toggle("invalid", arrivalMinutes === null);
@@ -1417,6 +1455,24 @@ Arrival spacing: every 20 minutes</pre>
 
       function calculateSlabAreaSqFt(lengthFt, widthFt) {
         return lengthFt * widthFt;
+      }
+
+      function calculatePolygonAreaSqFt(vertices) {
+        let edgeSum = 0;
+        for (let index = 0; index < vertices.length; index += 1) {
+          const current = vertices[index];
+          const next = vertices[(index + 1) % vertices.length];
+          const latitude1 = current.lat * Math.PI / 180;
+          const latitude2 = next.lat * Math.PI / 180;
+          const longitudeDelta = (next.lng - current.lng) * Math.PI / 180;
+          edgeSum += longitudeDelta * (
+            2 + Math.sin(latitude1) + Math.sin(latitude2)
+          );
+        }
+
+        const areaSquareMeters =
+          polygonEarthRadiusMeters ** 2 * Math.abs(edgeSum) / 2;
+        return areaSquareMeters * squareMetersToSquareFeet;
       }
 
       function calculateUnroundedOrderVolumeCy(areaSqFt, thicknessIn, wastePercent) {
@@ -1463,8 +1519,7 @@ Arrival spacing: every 20 minutes</pre>
         return firstArrivalMinutes + pourDurationMinutes;
       }
 
-      function calculatePourPlan(values) {
-        const areaSqFt = calculateSlabAreaSqFt(values.length, values.width);
+      function calculatePourPlan(values, areaSqFt) {
         const unroundedOrderVolumeCy = calculateUnroundedOrderVolumeCy(
           areaSqFt,
           values.thickness,
@@ -1516,6 +1571,513 @@ Arrival spacing: every 20 minutes</pre>
           finishTimeMinutes,
           truckCapacityCy: values.capacity
         };
+      }
+
+      function degreesToRadians(degrees) {
+        return degrees * Math.PI / 180;
+      }
+
+      function rectangleBoundsFromDimensions(lengthFt, widthFt, center) {
+        const feetPerLatitudeDegree = 364000;
+        const feetPerLongitudeDegree =
+          feetPerLatitudeDegree * Math.cos(degreesToRadians(center.lat));
+        const latitudeRadius = lengthFt / (2 * feetPerLatitudeDegree);
+        const longitudeRadius = widthFt / (2 * feetPerLongitudeDegree);
+
+        return [
+          [center.lat - latitudeRadius, center.lng - longitudeRadius],
+          [center.lat + latitudeRadius, center.lng + longitudeRadius]
+        ];
+      }
+
+      function updateDimensionRectangle(values) {
+        if (!leafletMap) {
+          return;
+        }
+        if (!dimensionCenter) {
+          dimensionCenter = leafletMap.getCenter();
+        }
+
+        const bounds = rectangleBoundsFromDimensions(
+          values.length,
+          values.width,
+          dimensionCenter
+        );
+        if (!dimensionRectangle) {
+          dimensionRectangle = L.rectangle(bounds, rectangleStyle).addTo(leafletMap);
+        } else {
+          dimensionRectangle.setBounds(bounds);
+          if (!leafletMap.hasLayer(dimensionRectangle)) {
+            dimensionRectangle.addTo(leafletMap);
+          }
+        }
+        dimensionRectangle.bringToFront();
+        outputElements.geometryCaption.textContent = "Rectangle from typed dimensions";
+        setMapFeedback("The rectangle is centered on the map and reflects the typed dimensions.");
+      }
+
+      function clonePolygonVertices(vertices) {
+        return vertices.map(vertex => L.latLng(vertex.lat, vertex.lng));
+      }
+
+      function polygonOrientation(first, second, third) {
+        return (second.lng - first.lng) * (third.lat - first.lat) -
+          (second.lat - first.lat) * (third.lng - first.lng);
+      }
+
+      function pointLiesOnSegment(point, start, end) {
+        const epsilon = 1e-12;
+        return Math.abs(polygonOrientation(start, end, point)) <= epsilon &&
+          point.lng >= Math.min(start.lng, end.lng) - epsilon &&
+          point.lng <= Math.max(start.lng, end.lng) + epsilon &&
+          point.lat >= Math.min(start.lat, end.lat) - epsilon &&
+          point.lat <= Math.max(start.lat, end.lat) + epsilon;
+      }
+
+      function segmentsIntersect(firstStart, firstEnd, secondStart, secondEnd) {
+        const epsilon = 1e-12;
+        const firstOrientation = polygonOrientation(firstStart, firstEnd, secondStart);
+        const secondOrientation = polygonOrientation(firstStart, firstEnd, secondEnd);
+        const thirdOrientation = polygonOrientation(secondStart, secondEnd, firstStart);
+        const fourthOrientation = polygonOrientation(secondStart, secondEnd, firstEnd);
+
+        const crossesFirst = firstOrientation > epsilon && secondOrientation < -epsilon ||
+          firstOrientation < -epsilon && secondOrientation > epsilon;
+        const crossesSecond = thirdOrientation > epsilon && fourthOrientation < -epsilon ||
+          thirdOrientation < -epsilon && fourthOrientation > epsilon;
+        if (crossesFirst && crossesSecond) {
+          return true;
+        }
+
+        return Math.abs(firstOrientation) <= epsilon &&
+            pointLiesOnSegment(secondStart, firstStart, firstEnd) ||
+          Math.abs(secondOrientation) <= epsilon &&
+            pointLiesOnSegment(secondEnd, firstStart, firstEnd) ||
+          Math.abs(thirdOrientation) <= epsilon &&
+            pointLiesOnSegment(firstStart, secondStart, secondEnd) ||
+          Math.abs(fourthOrientation) <= epsilon &&
+            pointLiesOnSegment(firstEnd, secondStart, secondEnd);
+      }
+
+      function polygonHasSelfIntersections(vertices) {
+        const count = vertices.length;
+        for (let firstIndex = 0; firstIndex < count; firstIndex += 1) {
+          const firstStart = vertices[firstIndex];
+          const firstEnd = vertices[(firstIndex + 1) % count];
+          for (let secondIndex = firstIndex + 1; secondIndex < count; secondIndex += 1) {
+            const secondStart = vertices[secondIndex];
+            const secondEnd = vertices[(secondIndex + 1) % count];
+            const adjacentEdges =
+              (firstIndex + 1) % count === secondIndex ||
+              (secondIndex + 1) % count === firstIndex;
+            if (!adjacentEdges && segmentsIntersect(
+              firstStart,
+              firstEnd,
+              secondStart,
+              secondEnd
+            )) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function validatePolygonVertices(vertices) {
+        const distinctVertices = new Set(
+          vertices.map(vertex => `${vertex.lat.toFixed(8)},${vertex.lng.toFixed(8)}`)
+        );
+        if (distinctVertices.size < 3) {
+          return "An outline needs at least three distinct corners.";
+        }
+        if (polygonHasSelfIntersections(vertices)) {
+          return "The outline cannot cross itself.";
+        }
+        if (!(calculatePolygonAreaSqFt(vertices) > 0)) {
+          return "The outline must enclose an area.";
+        }
+        return "";
+      }
+
+      function rectangleCenter() {
+        if (dimensionRectangle) {
+          return dimensionRectangle.getBounds().getCenter();
+        }
+        return dimensionCenter || (leafletMap ? leafletMap.getCenter() : null);
+      }
+
+      function clearMeasurementMarker() {
+        if (leafletMap && measurementMarker && leafletMap.hasLayer(measurementMarker)) {
+          leafletMap.removeLayer(measurementMarker);
+        }
+      }
+
+      function ensureMeasurementMarker(center) {
+        if (!measurementMarker) {
+          const icon = L.divIcon({
+            className: "map-measurement-icon",
+            html: '<div class="map-measurement-label"><span class="map-area-value"></span><strong class="map-order-value"></strong></div>',
+            iconSize: [142, 56],
+            iconAnchor: [71, 28]
+          });
+          measurementMarker = L.marker(center, {
+            icon,
+            interactive: false,
+            keyboard: false,
+            zIndexOffset: 1000
+          });
+        }
+        if (!leafletMap.hasLayer(measurementMarker)) {
+          measurementMarker.addTo(leafletMap);
+        }
+        measurementMarker.setLatLng(center);
+      }
+
+      function updateMeasurementMarker(areaSqFt, orderVolumeCy, center) {
+        if (!leafletMap || !center) {
+          return;
+        }
+        ensureMeasurementMarker(center);
+        const markerElement = measurementMarker.getElement();
+        if (!markerElement) {
+          return;
+        }
+        markerElement.querySelector(".map-area-value").textContent =
+          `${formatQuantity(areaSqFt)} ft²`;
+        markerElement.querySelector(".map-order-value").textContent =
+          `ORDER ${orderVolumeCy.toFixed(1)} cy`;
+      }
+
+      function removeDrawingPreview() {
+        if (drawingPreviewLayer && leafletMap.hasLayer(drawingPreviewLayer)) {
+          leafletMap.removeLayer(drawingPreviewLayer);
+        }
+        drawingPreviewLayer = null;
+        for (const marker of drawingPreviewMarkers) {
+          if (leafletMap.hasLayer(marker)) {
+            leafletMap.removeLayer(marker);
+          }
+        }
+        drawingPreviewMarkers = [];
+      }
+
+      function clearDisplayedPolygon() {
+        if (polygonLayer && leafletMap.hasLayer(polygonLayer)) {
+          leafletMap.removeLayer(polygonLayer);
+        }
+        polygonLayer = null;
+        for (const marker of polygonVertexMarkers) {
+          if (leafletMap.hasLayer(marker)) {
+            leafletMap.removeLayer(marker);
+          }
+        }
+        polygonVertexMarkers = [];
+      }
+
+      function drawVertexIcon() {
+        return L.divIcon({
+          className: "slab-vertex-icon",
+          html: "<span></span>",
+          iconSize: [16, 16],
+          iconAnchor: [8, 8]
+        });
+      }
+
+      function handleVertexDrag() {
+        const candidateVertices = polygonVertexMarkers.map(marker => marker.getLatLng());
+        const validationError = validatePolygonVertices(candidateVertices);
+        if (validationError) {
+          geometryError = validationError;
+          setMapFeedback(`${validationError} Release to restore the previous outline.`, true);
+          updatePourSummary();
+          return;
+        }
+
+        geometryError = "";
+        drawnPolygonVertices = clonePolygonVertices(candidateVertices);
+        lastValidPolygonVertices = clonePolygonVertices(candidateVertices);
+        polygonLayer.setLatLngs(drawnPolygonVertices);
+        updatePourSummary();
+      }
+
+      function finishVertexDrag() {
+        const candidateVertices = polygonVertexMarkers.map(marker => marker.getLatLng());
+        const validationError = validatePolygonVertices(candidateVertices);
+        if (validationError) {
+          polygonVertexMarkers.forEach((marker, index) => {
+            marker.setLatLng(lastValidPolygonVertices[index]);
+          });
+          drawnPolygonVertices = clonePolygonVertices(lastValidPolygonVertices);
+          polygonLayer.setLatLngs(drawnPolygonVertices);
+          geometryError = "";
+          setMapFeedback("Invalid corner adjustment reverted to the previous valid outline.", true);
+        } else {
+          drawnPolygonVertices = clonePolygonVertices(candidateVertices);
+          lastValidPolygonVertices = clonePolygonVertices(candidateVertices);
+          polygonLayer.setLatLngs(drawnPolygonVertices);
+          geometryError = "";
+          setMapFeedback("Outline updated. Drag another corner or switch input modes.");
+        }
+        updatePourSummary();
+      }
+
+      function showDrawnPolygon() {
+        if (!leafletMap || !drawnPolygonVertices) {
+          return;
+        }
+        clearDisplayedPolygon();
+        polygonLayer = L.polygon(drawnPolygonVertices, polygonStyle).addTo(leafletMap);
+        polygonLayer.bringToFront();
+        polygonVertexMarkers = drawnPolygonVertices.map(vertex => {
+          const marker = L.marker(vertex, {
+            draggable: true,
+            icon: drawVertexIcon(),
+            keyboard: true,
+            riseOnHover: true,
+            title: "Drag to adjust slab corner"
+          }).addTo(leafletMap);
+          marker.on("drag", handleVertexDrag);
+          marker.on("dragend", finishVertexDrag);
+          return marker;
+        });
+        outputElements.geometryCaption.textContent = "Drawn slab outline";
+      }
+
+      function normalizeDrawingVertices(vertices) {
+        const normalized = [];
+        for (const vertex of vertices) {
+          if (!normalized.length || leafletMap.distance(normalized.at(-1), vertex) > 0.25) {
+            normalized.push(L.latLng(vertex.lat, vertex.lng));
+          }
+        }
+        if (normalized.length > 3 &&
+            leafletMap.distance(normalized[0], normalized.at(-1)) <= 0.25) {
+          normalized.pop();
+        }
+        return normalized;
+      }
+
+      function finishPolygonDrawing() {
+        const vertices = normalizeDrawingVertices(drawingVertices);
+        const validationError = validatePolygonVertices(vertices);
+        if (validationError) {
+          geometryError = validationError;
+          stopPolygonDrawing();
+          setMapFeedback(`${validationError} Click Draw slab to start again.`, true);
+          updatePourSummary();
+          return;
+        }
+
+        drawnPolygonVertices = clonePolygonVertices(vertices);
+        lastValidPolygonVertices = clonePolygonVertices(vertices);
+        geometryError = "";
+        stopPolygonDrawing();
+        showDrawnPolygon();
+        setMapFeedback("Outline ready. Drag any corner to adjust it.");
+        updatePourSummary();
+      }
+
+      function isNearFirstDrawingVertex(latLng) {
+        if (!drawingVertices.length) {
+          return false;
+        }
+        const firstPoint = leafletMap.latLngToContainerPoint(drawingVertices[0]);
+        const clickedPoint = leafletMap.latLngToContainerPoint(latLng);
+        return firstPoint.distanceTo(clickedPoint) <= 16;
+      }
+
+      function updateDrawingPreview() {
+        removeDrawingPreview();
+        if (drawingVertices.length >= 3) {
+          drawingPreviewLayer = L.polygon(drawingVertices, {
+            ...polygonStyle,
+            dashArray: "6 5",
+            fillOpacity: 0.14
+          }).addTo(leafletMap);
+        } else if (drawingVertices.length >= 2) {
+          drawingPreviewLayer = L.polyline(drawingVertices, {
+            color: polygonStyle.color,
+            weight: 3,
+            dashArray: "6 5"
+          }).addTo(leafletMap);
+        }
+
+        drawingVertices.forEach((vertex, index) => {
+          const marker = L.circleMarker(vertex, {
+            radius: index === 0 ? 8 : 6,
+            color: "#0f716b",
+            weight: 2,
+            fillColor: "#ffffff",
+            fillOpacity: 1,
+            bubblingMouseEvents: false
+          }).addTo(leafletMap);
+          if (index === 0) {
+            marker.on("click", event => {
+              L.DomEvent.stopPropagation(event.originalEvent);
+              if (drawingVertices.length >= 3) {
+                finishPolygonDrawing();
+              }
+            });
+          }
+          drawingPreviewMarkers.push(marker);
+        });
+      }
+
+      function handleMapDoubleClick(event) {
+        if (!isDrawingPolygon) {
+          return;
+        }
+        L.DomEvent.stop(event.originalEvent);
+        finishPolygonDrawing();
+      }
+
+      function stopPolygonDrawing() {
+        isDrawingPolygon = false;
+        drawSlabButton.setAttribute("aria-pressed", "false");
+        if (leafletMap) {
+          leafletMap.doubleClickZoom.enable();
+        }
+        removeDrawingPreview();
+        drawingVertices = [];
+      }
+
+      function startPolygonDrawing() {
+        if (!leafletMap) {
+          setMapFeedback("The map is unavailable; check that Leaflet loaded.", true);
+          return;
+        }
+        if (activeGeometryMode !== "map") {
+          setGeometryMode("map");
+        }
+        clearDisplayedPolygon();
+        drawnPolygonVertices = null;
+        lastValidPolygonVertices = null;
+        clearMeasurementMarker();
+        geometryError = "Draw and finish a valid outline to calculate this slab.";
+        isDrawingPolygon = true;
+        drawingVertices = [];
+        drawSlabButton.setAttribute("aria-pressed", "true");
+        leafletMap.doubleClickZoom.disable();
+        outputElements.geometryCaption.textContent = "Drawing slab outline";
+        setMapFeedback("Click at least three corners; double-click or click the first corner to finish.");
+        updatePourSummary();
+      }
+
+      function updateGeometryModeControls() {
+        for (const button of geometryModeButtons) {
+          const isActive = button.dataset.geometryMode === activeGeometryMode;
+          button.setAttribute("aria-pressed", String(isActive));
+        }
+        const dimensionsDisabled = activeGeometryMode === "map";
+        inputs.length.disabled = dimensionsDisabled;
+        inputs.width.disabled = dimensionsDisabled;
+      }
+
+      function setGeometryMode(mode) {
+        if (!leafletMap) {
+          return;
+        }
+        if (isDrawingPolygon) {
+          stopPolygonDrawing();
+        }
+
+        activeGeometryMode = mode;
+        geometryError = "";
+        updateGeometryModeControls();
+        if (mode === "dimensions") {
+          clearDisplayedPolygon();
+          dimensionCenter = leafletMap.getCenter();
+          const { values, errors } = readPourInputs();
+          if (!errors.length) {
+            updateDimensionRectangle(values);
+          }
+          setMapFeedback("Enter dimensions to show a centered rectangle.");
+        } else {
+          if (dimensionRectangle && leafletMap.hasLayer(dimensionRectangle)) {
+            leafletMap.removeLayer(dimensionRectangle);
+          }
+          if (drawnPolygonVertices) {
+            showDrawnPolygon();
+            setMapFeedback("Drag a corner to adjust the outline, or draw a new slab.");
+          } else {
+            clearMeasurementMarker();
+            outputElements.geometryCaption.textContent = "No finished outline";
+            setMapFeedback("Click Draw slab, place at least three corners, then finish the outline.");
+          }
+        }
+        leafletMap.invalidateSize();
+        updatePourSummary();
+      }
+
+      function getActiveGeometryArea(values) {
+        if (activeGeometryMode === "dimensions") {
+          updateDimensionRectangle(values);
+          return {
+            areaSqFt: calculateSlabAreaSqFt(values.length, values.width),
+            center: rectangleCenter()
+          };
+        }
+        if (isDrawingPolygon) {
+          return { error: "Finish drawing a valid outline to calculate the slab." };
+        }
+        if (geometryError) {
+          return { error: geometryError };
+        }
+        if (!drawnPolygonVertices) {
+          return { error: "Draw and finish a valid outline to calculate the slab." };
+        }
+
+        const validationError = validatePolygonVertices(drawnPolygonVertices);
+        if (validationError) {
+          return { error: validationError };
+        }
+        const center = polygonLayer
+          ? polygonLayer.getBounds().getCenter()
+          : leafletMap.getBounds().getCenter();
+        return {
+          areaSqFt: calculatePolygonAreaSqFt(drawnPolygonVertices),
+          center
+        };
+      }
+
+      function initializeLeafletMap() {
+        if (typeof L === "undefined") {
+          outputElements.mapStatus.textContent = "Leaflet failed to load.";
+          outputElements.mapFeedback.textContent = "The map needs a network connection to load Leaflet.";
+          for (const button of geometryModeButtons) {
+            button.disabled = true;
+          }
+          drawSlabButton.disabled = true;
+          return false;
+        }
+
+        leafletMap = L.map("leaflet-map", {
+          center: campusCenter,
+          zoom: 18,
+          zoomControl: false,
+          attributionControl: true
+        });
+        L.control.zoom({ position: "topright" }).addTo(leafletMap);
+        dimensionCenter = leafletMap.getCenter();
+
+        const imageryLayer = L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          {
+            maxZoom: 19,
+            attribution: "Tiles &copy; Esri &mdash; Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community"
+          }
+        );
+        imageryLayer.on("load", () => {
+          outputElements.mapStatus.textContent = "Esri World Imagery · BYU campus";
+        });
+        imageryLayer.on("tileerror", () => {
+          outputElements.mapStatus.textContent =
+            "Satellite imagery unavailable; check your connection.";
+        });
+        imageryLayer.addTo(leafletMap);
+        leafletMap.on("click", event => addDrawingVertex(event.latlng));
+        leafletMap.on("dblclick", handleMapDoubleClick);
+        return true;
       }
 
       function roundDisplayedMinutes(minutes) {
@@ -1575,26 +2137,16 @@ Arrival spacing: every 20 minutes</pre>
         outputElements.finishTime.textContent = "--";
         outputElements.arrivalSpacing.textContent = "Arrival spacing unavailable";
         outputElements.orderSummary.textContent = "Order summary unavailable until all inputs are valid.";
-        outputElements.mapArea.textContent = "-- ft²";
-        outputElements.mapOrder.textContent = "ORDER --";
-        outputElements.mapFrame.setAttribute(
-          "aria-label",
-          "Static map illustration; calculated slab area and order volume are unavailable until inputs are valid"
-        );
+        clearMeasurementMarker();
       }
 
-      function updateSummaryCards(plan, values) {
+      function updateSummaryCards(plan, values, geometryCenter) {
         outputElements.orderVolume.textContent = plan.orderVolumeCy.toFixed(1);
         outputElements.loadCount.textContent = String(plan.loadCount);
         outputElements.truckCount.textContent = String(plan.truckCount);
         outputElements.pourDuration.textContent = formatDuration(plan.pourDurationMinutes);
         outputElements.finishTime.textContent = formatClockTime(plan.finishTimeMinutes);
-        outputElements.mapArea.textContent = `${formatQuantity(plan.areaSqFt)} ft²`;
-        outputElements.mapOrder.textContent = `ORDER ${plan.orderVolumeCy.toFixed(1)} cy`;
-        outputElements.mapFrame.setAttribute(
-          "aria-label",
-          `Static map illustration. Typed slab area ${formatQuantity(plan.areaSqFt)} square feet; order volume ${plan.orderVolumeCy.toFixed(1)} cubic yards.`
-        );
+        updateMeasurementMarker(plan.areaSqFt, plan.orderVolumeCy, geometryCenter);
         outputElements.arrivalSpacing.textContent =
           `${roundDisplayedMinutes(plan.arrivalSpacingMinutes)} min arrival spacing`;
         outputElements.orderSummary.textContent = [
@@ -1607,8 +2159,10 @@ Arrival spacing: every 20 minutes</pre>
 
       function updatePourSummary() {
         const { values, errors } = readPourInputs();
-        if (errors.length > 0) {
-          outputElements.inputErrors.textContent = errors.join(" ");
+        const geometry = errors.length ? null : getActiveGeometryArea(values);
+        if (errors.length > 0 || geometry?.error) {
+          const messages = geometry?.error ? [...errors, geometry.error] : errors;
+          outputElements.inputErrors.textContent = messages.join(" ");
           outputElements.inputErrors.hidden = false;
           setOutputsUnavailable();
           return;
@@ -1616,19 +2170,50 @@ Arrival spacing: every 20 minutes</pre>
 
         outputElements.inputErrors.textContent = "";
         outputElements.inputErrors.hidden = true;
-        const plan = calculatePourPlan(values);
-        updateSummaryCards(plan, values);
+        const plan = calculatePourPlan(values, geometry.areaSqFt);
+        updateSummaryCards(plan, values, geometry.center);
+      }
+
+      function bindMapControls() {
+        for (const button of geometryModeButtons) {
+          button.addEventListener("click", () => {
+            setGeometryMode(button.dataset.geometryMode);
+          });
+        }
+        drawSlabButton.addEventListener("click", startPolygonDrawing);
       }
 
       document.getElementById("pour-inputs").addEventListener("submit", event => {
         event.preventDefault();
       });
 
+      function addDrawingVertex(latLng) {
+        if (!isDrawingPolygon) {
+          return;
+        }
+        if (drawingVertices.length >= 3 && isNearFirstDrawingVertex(latLng)) {
+          finishPolygonDrawing();
+          return;
+        }
+        const lastVertex = drawingVertices.at(-1);
+        if (lastVertex && leafletMap.distance(lastVertex, latLng) <= 0.25) {
+          return;
+        }
+        drawingVertices.push(L.latLng(latLng.lat, latLng.lng));
+        updateDrawingPreview();
+        const remainingCorners = Math.max(0, 3 - drawingVertices.length);
+        setMapFeedback(remainingCorners
+          ? `Add ${remainingCorners} more ${remainingCorners === 1 ? "corner" : "corners"}, then double-click or click the first corner to finish.`
+          : "Double-click or click the first corner to finish the outline.");
+      }
+
       for (const input of Object.values(inputs)) {
         input.addEventListener("input", updatePourSummary);
         input.addEventListener("change", updatePourSummary);
       }
 
+      initializeLeafletMap();
+      bindMapControls();
       updatePourSummary();
     </script>
   </body>
