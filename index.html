@@ -427,6 +427,21 @@
         padding-right: 9px;
       }
 
+      .field input.invalid {
+        border-color: #b42318;
+        background: #fff9f8;
+      }
+
+      .input-errors {
+        margin: 0 17px 12px;
+        padding: 10px 12px;
+        border: 1px solid #efc3bf;
+        border-radius: 8px;
+        background: #fff5f4;
+        color: #8a2119;
+        font-size: 12px;
+      }
+
       .unit {
         position: absolute;
         top: 50%;
@@ -775,6 +790,11 @@
         white-space: nowrap;
       }
 
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
       .draw-button {
         min-height: 32px;
         padding: 7px 10px;
@@ -972,7 +992,7 @@
       </div>
       <div class="topbar-meta">
         <span class="location-pill"><span class="location-dot"></span>BYU campus · Provo, UT</span>
-        <span class="mockup-pill">Stage 1 mockup</span>
+        <span class="mockup-pill">Stage 2 calculations</span>
       </div>
     </header>
 
@@ -982,7 +1002,7 @@
           <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
           <path d="M12 10.5v5M12 7.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <p><strong>Static layout preview.</strong> Inputs, map controls, schedule, and sample results are shown for review; they are not connected and do not calculate.</p>
+        <p><strong>Typed-dimension calculations are active.</strong> The map outline and truck timeline are static samples; map drawing and order copying are not active in this stage.</p>
       </aside>
 
       <div class="workspace">
@@ -995,10 +1015,10 @@
               </div>
               <div class="map-toolbar">
                 <div class="mode-switch" aria-label="Geometry entry mode">
-                  <button type="button" aria-pressed="false">Draw on map</button>
-                  <button type="button" aria-pressed="true">Enter dimensions</button>
+                  <button type="button" aria-pressed="false" disabled>Draw on map</button>
+                  <button type="button" aria-pressed="true" disabled>Enter dimensions</button>
                 </div>
-                <button class="draw-button" type="button" aria-label="Draw slab (mockup only)">
+                <button class="draw-button" type="button" aria-label="Draw slab (available in a later stage)" disabled>
                   <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                     <path d="m4 14.8-.7 2.8 2.8-.7L16.5 6.5 13.5 3.5 4 14.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
                     <path d="m11.9 5.1 3 3" stroke="currentColor" stroke-width="1.5"/>
@@ -1008,7 +1028,7 @@
               </div>
             </div>
 
-            <div class="map-frame" role="img" aria-label="Static map preview centered near BYU campus with a 40 by 60 foot slab outline, area 2,400 square feet, and order volume 47 cubic yards">
+            <div class="map-frame" role="img" aria-label="Static map illustration centered near BYU campus with a 40 by 60 foot slab outline">
               <svg class="map-art" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
                 <rect width="900" height="560" fill="#e6ebdf"/>
                 <path d="M0 75 250 0h145l-56 113L0 190ZM630 0h270v148l-214 40-96-89ZM0 416l228-83 111 126-139 101H0ZM655 405l245-80v235H594Z" fill="#d8e5d0"/>
@@ -1042,8 +1062,8 @@
                   <circle cx="333" cy="333" r="8" fill="#fff" stroke="#0f716b" stroke-width="4"/>
                   <rect x="376" y="232" width="120" height="60" rx="8" fill="#fff" stroke="#dce8e4"/>
                   <text x="436" y="247" text-anchor="middle" fill="#52635d" font-family="system-ui, sans-serif" font-size="8" font-weight="700" letter-spacing=".7">SLAB AREA</text>
-                  <text x="436" y="262" text-anchor="middle" fill="#165e57" font-family="system-ui, sans-serif" font-size="11" font-weight="800">2,400 ft²</text>
-                  <text x="436" y="279" text-anchor="middle" fill="#52635d" font-family="system-ui, sans-serif" font-size="8" font-weight="750">ORDER 47.0 cy</text>
+                  <text id="area-label-output" x="436" y="262" text-anchor="middle" fill="#165e57" font-family="system-ui, sans-serif" font-size="11" font-weight="800">2,400 ft²</text>
+                  <text id="order-label-output" x="436" y="279" text-anchor="middle" fill="#52635d" font-family="system-ui, sans-serif" font-size="8" font-weight="750">ORDER 47.0 cy</text>
                 </g>
               </svg>
               <div class="map-tag">Map preview · imagery loads in a later stage</div>
@@ -1054,7 +1074,7 @@
               <div class="map-compass" aria-hidden="true">N</div>
             </div>
             <div class="map-note">
-              <strong>Static 40 ft &times; 60 ft rectangle</strong>
+              <strong>Static 40 ft &times; 60 ft illustration</strong>
               <span class="map-legend"><span class="outline-key"></span>Slab outline</span>
             </div>
           </section>
@@ -1068,14 +1088,15 @@
               <span class="default-pill">Default values</span>
             </div>
 
-            <form class="input-form" aria-label="Static input mockup">
+            <p class="input-errors" id="input-errors" role="alert" aria-live="polite" hidden></p>
+            <form class="input-form" id="pour-inputs" aria-label="Concrete pour inputs">
               <section class="field-group" aria-labelledby="geometry-fields">
                 <h3 class="field-group-title" id="geometry-fields">Slab dimensions</h3>
                 <div class="field-grid">
                   <div class="field">
                     <label for="slab-length">Length</label>
                     <div class="input-wrap">
-                      <input id="slab-length" type="number" value="40" min="1" max="50" step="1">
+                      <input id="slab-length" type="number" value="40" min="1" max="50" step="any">
                       <span class="unit">ft</span>
                     </div>
                     <span class="field-hint">Range: 1-50 ft</span>
@@ -1083,7 +1104,7 @@
                   <div class="field">
                     <label for="slab-width">Width</label>
                     <div class="input-wrap">
-                      <input id="slab-width" type="number" value="60" min="1" max="100" step="1">
+                      <input id="slab-width" type="number" value="60" min="1" max="100" step="any">
                       <span class="unit">ft</span>
                     </div>
                     <span class="field-hint">Range: 1-100 ft</span>
@@ -1097,7 +1118,7 @@
                   <div class="field">
                     <label for="thickness">Slab thickness</label>
                     <div class="input-wrap">
-                      <input id="thickness" type="number" value="6" min="1" max="24" step="1">
+                      <input id="thickness" type="number" value="6" min="1" max="24" step="any">
                       <span class="unit">in</span>
                     </div>
                     <span class="field-hint">Range: 1-24 in</span>
@@ -1105,7 +1126,7 @@
                   <div class="field">
                     <label for="waste">Waste allowance</label>
                     <div class="input-wrap">
-                      <input id="waste" type="number" value="5" min="0" max="60" step="1">
+                      <input id="waste" type="number" value="5" min="0" max="60" step="any">
                       <span class="unit">%</span>
                     </div>
                     <span class="field-hint">Range: 0-60%</span>
@@ -1113,7 +1134,7 @@
                   <div class="field">
                     <label for="capacity">Truck capacity</label>
                     <div class="input-wrap">
-                      <input id="capacity" type="number" value="10" min="1" max="12" step="1">
+                      <input id="capacity" type="number" value="10" min="1" max="12" step="any">
                       <span class="unit">cy</span>
                     </div>
                     <span class="field-hint">Range: 1-12 cy</span>
@@ -1121,7 +1142,7 @@
                   <div class="field">
                     <label for="placement-rate">Placement rate</label>
                     <div class="input-wrap">
-                      <input id="placement-rate" type="number" value="30" min="1" max="250" step="1">
+                      <input id="placement-rate" type="number" value="30" min="1" max="250" step="any">
                       <span class="unit">cy/hr</span>
                     </div>
                     <span class="field-hint">Range: 1-250 cy/hr</span>
@@ -1135,7 +1156,7 @@
                   <div class="field">
                     <label for="travel-time">One-way travel time</label>
                     <div class="input-wrap">
-                      <input id="travel-time" type="number" value="20" min="0" max="300" step="1">
+                      <input id="travel-time" type="number" value="20" min="0" max="300" step="any">
                       <span class="unit">min</span>
                     </div>
                     <span class="field-hint">Range: 0-300 min</span>
@@ -1143,7 +1164,7 @@
                   <div class="field">
                     <label for="washout-time">Washout and reload</label>
                     <div class="input-wrap">
-                      <input id="washout-time" type="number" value="10" min="0" max="100" step="1">
+                      <input id="washout-time" type="number" value="10" min="0" max="100" step="any">
                       <span class="unit">min</span>
                     </div>
                     <span class="field-hint">Range: 0-100 min</span>
@@ -1166,27 +1187,27 @@
           </section>
         </section>
 
-        <section class="results-column" aria-label="Static sample results">
+        <section class="results-column" aria-label="Concrete pour results">
           <section class="summary-grid" aria-label="Pour summary">
             <article class="summary-card primary">
               <span class="summary-label">Concrete to order</span>
-              <strong class="summary-value">47.0 <small>cy</small></strong>
+              <strong class="summary-value"><span id="order-volume-output">47.0</span> <small>cy</small></strong>
             </article>
             <article class="summary-card">
               <span class="summary-label">Truckloads</span>
-              <strong class="summary-value">5</strong>
+              <strong class="summary-value" id="load-count-output">5</strong>
             </article>
             <article class="summary-card">
               <span class="summary-label">Trucks in rotation</span>
-              <strong class="summary-value">4</strong>
+              <strong class="summary-value" id="truck-count-output">4</strong>
             </article>
             <article class="summary-card">
               <span class="summary-label">Pour duration</span>
-              <strong class="summary-value">1 <small>h</small> 34 <small>min</small></strong>
+              <strong class="summary-value" id="pour-duration-output">1 h 34 min</strong>
             </article>
             <article class="summary-card">
               <span class="summary-label">Estimated finish</span>
-              <strong class="summary-value">8:34 <small>AM</small></strong>
+              <strong class="summary-value" id="finish-time-output">8:34 AM</strong>
             </article>
           </section>
 
@@ -1194,9 +1215,9 @@
             <div class="panel-head">
               <div>
                 <h2 id="schedule-title">Truck schedule</h2>
-                <p class="panel-subtitle">A continuous delivery plan · sample timeline</p>
+                <p class="panel-subtitle">Static sample timeline · segment times do not update in this stage</p>
               </div>
-              <span class="schedule-meta"><span class="meta-dot"></span>20 min arrival spacing</span>
+              <span class="schedule-meta"><span class="meta-dot"></span><span id="arrival-spacing-output">20 min arrival spacing</span></span>
             </div>
             <div class="legend" aria-label="Schedule activity legend">
               <span class="legend-item"><span class="legend-swatch travel-color"></span>Travel to site</span>
@@ -1266,7 +1287,7 @@
               </div>
             </div>
             <div class="schedule-foot">
-              <span>Times are jobsite local · segment times shown for layout only</span>
+              <span>Times are jobsite local · timeline rows are static sample values</span>
               <span class="duration-note">Pour complete 8:34 AM</span>
             </div>
           </section>
@@ -1279,11 +1300,11 @@
               </div>
             </div>
             <div class="order-content">
-              <pre class="order-text">CONCRETE ORDER: 47.0 CY
+              <pre class="order-text" id="order-summary-output" aria-live="polite">CONCRETE ORDER: 47.0 CY
 Loads: 5 (4 x 10 cy, 1 x 7 cy)
 First jobsite arrival: 7:00 AM
 Arrival spacing: every 20 minutes</pre>
-              <button class="copy-button" type="button" aria-label="Copy order summary (mockup only)">
+              <button class="copy-button" type="button" aria-label="Copy order summary (available in a later stage)" disabled>
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <rect x="7" y="6" width="9" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
                   <path d="M12.5 6V4.5A1.5 1.5 0 0 0 11 3H5.5A1.5 1.5 0 0 0 4 4.5v8A1.5 1.5 0 0 0 5.5 14H7" stroke="currentColor" stroke-width="1.5"/>
@@ -1291,15 +1312,324 @@ Arrival spacing: every 20 minutes</pre>
                 Copy order
               </button>
             </div>
-            <p class="copy-note">Copy confirmation will appear here in a later stage.</p>
+            <p class="copy-note">The order text updates with valid inputs; copying is added in a later stage.</p>
           </section>
         </section>
       </div>
 
       <footer class="page-foot">
-        <span>Concrete pour planner · Static Stage 1 mockup</span>
-        <span>Sample values are for layout review only</span>
+        <span>Concrete pour planner · Stage 2 calculations</span>
+        <span>Map and schedule remain static samples</span>
       </footer>
     </main>
+    <script>
+      const inputs = {
+        length: document.getElementById("slab-length"),
+        width: document.getElementById("slab-width"),
+        thickness: document.getElementById("thickness"),
+        waste: document.getElementById("waste"),
+        capacity: document.getElementById("capacity"),
+        placementRate: document.getElementById("placement-rate"),
+        travelTime: document.getElementById("travel-time"),
+        washoutTime: document.getElementById("washout-time"),
+        firstArrival: document.getElementById("first-arrival")
+      };
+
+      const outputElements = {
+        orderVolume: document.getElementById("order-volume-output"),
+        loadCount: document.getElementById("load-count-output"),
+        truckCount: document.getElementById("truck-count-output"),
+        pourDuration: document.getElementById("pour-duration-output"),
+        finishTime: document.getElementById("finish-time-output"),
+        arrivalSpacing: document.getElementById("arrival-spacing-output"),
+        orderSummary: document.getElementById("order-summary-output"),
+        mapArea: document.getElementById("area-label-output"),
+        mapOrder: document.getElementById("order-label-output"),
+        mapFrame: document.querySelector(".map-frame"),
+        inputErrors: document.getElementById("input-errors")
+      };
+
+      const inputLabels = {
+        length: "Length",
+        width: "Width",
+        thickness: "Slab thickness",
+        waste: "Waste allowance",
+        capacity: "Truck capacity",
+        placementRate: "Placement rate",
+        travelTime: "One-way travel time",
+        washoutTime: "Washout and reload"
+      };
+
+      function readNumberInput(input, label) {
+        const rawValue = input.value.trim();
+        const value = Number(rawValue);
+        const minimum = Number(input.min);
+        const maximum = Number(input.max);
+
+        if (rawValue === "" || !Number.isFinite(value)) {
+          return { error: `${label} must be a number.` };
+        }
+
+        if (value < minimum || value > maximum) {
+          return { error: `${label} must be between ${minimum} and ${maximum}.` };
+        }
+
+        return { value };
+      }
+
+      function parseTimeOfDay(timeValue) {
+        const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(timeValue);
+        if (!match) {
+          return null;
+        }
+        return Number(match[1]) * 60 + Number(match[2]);
+      }
+
+      function readPourInputs() {
+        const values = {};
+        const errors = [];
+
+        for (const [key, input] of Object.entries(inputs)) {
+          if (key === "firstArrival") {
+            const arrivalMinutes = parseTimeOfDay(input.value);
+            input.classList.toggle("invalid", arrivalMinutes === null);
+            input.setAttribute("aria-invalid", String(arrivalMinutes === null));
+            if (arrivalMinutes === null) {
+              errors.push("First truck arrival must be a valid time from 00:00 to 23:59.");
+            } else {
+              values.firstArrivalMinutes = arrivalMinutes;
+            }
+            continue;
+          }
+
+          const result = readNumberInput(input, inputLabels[key]);
+          input.classList.toggle("invalid", Boolean(result.error));
+          input.setAttribute("aria-invalid", String(Boolean(result.error)));
+          if (result.error) {
+            errors.push(result.error);
+          } else {
+            values[key] = result.value;
+          }
+        }
+
+        return { values, errors };
+      }
+
+      function calculateSlabAreaSqFt(lengthFt, widthFt) {
+        return lengthFt * widthFt;
+      }
+
+      function calculateUnroundedOrderVolumeCy(areaSqFt, thicknessIn, wastePercent) {
+        const slabVolumeCy = areaSqFt * thicknessIn / 12 / 27;
+        return slabVolumeCy * (1 + wastePercent / 100);
+      }
+
+      function roundOrderVolumeUpToHalfYard(unroundedVolumeCy) {
+        return Math.ceil(unroundedVolumeCy * 2) / 2;
+      }
+
+      function calculateTruckLoadCount(orderVolumeCy, truckCapacityCy) {
+        return Math.ceil(orderVolumeCy / truckCapacityCy);
+      }
+
+      function calculateFinalLoadVolumeCy(orderVolumeCy, truckCapacityCy, loadCount) {
+        return Math.min(
+          truckCapacityCy,
+          Math.max(0, orderVolumeCy - truckCapacityCy * (loadCount - 1))
+        );
+      }
+
+      function calculateArrivalSpacingMinutes(truckCapacityCy, placementRateCyPerHour) {
+        return 60 * truckCapacityCy / placementRateCyPerHour;
+      }
+
+      function calculateFinalLoadUnloadMinutes(finalLoadVolumeCy, placementRateCyPerHour) {
+        return 60 * finalLoadVolumeCy / placementRateCyPerHour;
+      }
+
+      function calculateTruckCycleMinutes(travelMinutes, fullLoadUnloadMinutes, washoutReloadMinutes) {
+        return 2 * travelMinutes + fullLoadUnloadMinutes + washoutReloadMinutes;
+      }
+
+      function calculateTruckCount(loadCount, truckCycleMinutes, arrivalSpacingMinutes) {
+        return Math.min(loadCount, Math.ceil(truckCycleMinutes / arrivalSpacingMinutes));
+      }
+
+      function calculatePourDurationMinutes(loadCount, arrivalSpacingMinutes, finalLoadUnloadMinutes) {
+        return (loadCount - 1) * arrivalSpacingMinutes + finalLoadUnloadMinutes;
+      }
+
+      function calculateFinishTimeMinutes(firstArrivalMinutes, pourDurationMinutes) {
+        return firstArrivalMinutes + pourDurationMinutes;
+      }
+
+      function calculatePourPlan(values) {
+        const areaSqFt = calculateSlabAreaSqFt(values.length, values.width);
+        const unroundedOrderVolumeCy = calculateUnroundedOrderVolumeCy(
+          areaSqFt,
+          values.thickness,
+          values.waste
+        );
+        const orderVolumeCy = roundOrderVolumeUpToHalfYard(unroundedOrderVolumeCy);
+        const loadCount = calculateTruckLoadCount(orderVolumeCy, values.capacity);
+        const finalLoadVolumeCy = calculateFinalLoadVolumeCy(
+          orderVolumeCy,
+          values.capacity,
+          loadCount
+        );
+        const arrivalSpacingMinutes = calculateArrivalSpacingMinutes(
+          values.capacity,
+          values.placementRate
+        );
+        const finalLoadUnloadMinutes = calculateFinalLoadUnloadMinutes(
+          finalLoadVolumeCy,
+          values.placementRate
+        );
+        const truckCycleMinutes = calculateTruckCycleMinutes(
+          values.travelTime,
+          arrivalSpacingMinutes,
+          values.washoutTime
+        );
+        const truckCount = calculateTruckCount(
+          loadCount,
+          truckCycleMinutes,
+          arrivalSpacingMinutes
+        );
+        const pourDurationMinutes = calculatePourDurationMinutes(
+          loadCount,
+          arrivalSpacingMinutes,
+          finalLoadUnloadMinutes
+        );
+        const finishTimeMinutes = calculateFinishTimeMinutes(
+          values.firstArrivalMinutes,
+          pourDurationMinutes
+        );
+
+        return {
+          areaSqFt,
+          orderVolumeCy,
+          loadCount,
+          truckCount,
+          finalLoadVolumeCy,
+          arrivalSpacingMinutes,
+          pourDurationMinutes,
+          finishTimeMinutes,
+          truckCapacityCy: values.capacity
+        };
+      }
+
+      function roundDisplayedMinutes(minutes) {
+        return Math.floor(minutes + 0.5);
+      }
+
+      function formatQuantity(value, maximumFractionDigits = 2) {
+        return new Intl.NumberFormat("en-US", {
+          maximumFractionDigits
+        }).format(value);
+      }
+
+      function formatDuration(minutes) {
+        const roundedMinutes = roundDisplayedMinutes(minutes);
+        const hours = Math.floor(roundedMinutes / 60);
+        const remainderMinutes = roundedMinutes % 60;
+        if (hours === 0) {
+          return `${remainderMinutes} min`;
+        }
+        return `${hours} h ${remainderMinutes} min`;
+      }
+
+      function formatClockTime(totalMinutes) {
+        const roundedTotalMinutes = roundDisplayedMinutes(totalMinutes);
+        const dayOffset = Math.floor(roundedTotalMinutes / (24 * 60));
+        const minutesInDay = roundedTotalMinutes % (24 * 60);
+        const hour24 = Math.floor(minutesInDay / 60);
+        const minute = minutesInDay % 60;
+        const period = hour24 < 12 ? "AM" : "PM";
+        const hour12 = hour24 % 12 || 12;
+        const dayLabel = dayOffset === 1
+          ? " (next day)"
+          : dayOffset > 1
+            ? ` (+${dayOffset} days)`
+            : "";
+
+        return `${hour12}:${String(minute).padStart(2, "0")} ${period}${dayLabel}`;
+      }
+
+      function formatLoadBreakdown(plan) {
+        const finalIsFullLoad = Math.abs(plan.finalLoadVolumeCy - plan.truckCapacityCy) < 1e-9;
+        if (finalIsFullLoad) {
+          return `${plan.loadCount} x ${formatQuantity(plan.truckCapacityCy)} cy`;
+        }
+        const fullLoadCount = plan.loadCount - 1;
+        const fullLoadText = fullLoadCount > 0
+          ? `${fullLoadCount} x ${formatQuantity(plan.truckCapacityCy)} cy, `
+          : "";
+        return `${fullLoadText}1 x ${formatQuantity(plan.finalLoadVolumeCy)} cy`;
+      }
+
+      function setOutputsUnavailable() {
+        outputElements.orderVolume.textContent = "--";
+        outputElements.loadCount.textContent = "--";
+        outputElements.truckCount.textContent = "--";
+        outputElements.pourDuration.textContent = "--";
+        outputElements.finishTime.textContent = "--";
+        outputElements.arrivalSpacing.textContent = "Arrival spacing unavailable";
+        outputElements.orderSummary.textContent = "Order summary unavailable until all inputs are valid.";
+        outputElements.mapArea.textContent = "-- ft²";
+        outputElements.mapOrder.textContent = "ORDER --";
+        outputElements.mapFrame.setAttribute(
+          "aria-label",
+          "Static map illustration; calculated slab area and order volume are unavailable until inputs are valid"
+        );
+      }
+
+      function updateSummaryCards(plan, values) {
+        outputElements.orderVolume.textContent = plan.orderVolumeCy.toFixed(1);
+        outputElements.loadCount.textContent = String(plan.loadCount);
+        outputElements.truckCount.textContent = String(plan.truckCount);
+        outputElements.pourDuration.textContent = formatDuration(plan.pourDurationMinutes);
+        outputElements.finishTime.textContent = formatClockTime(plan.finishTimeMinutes);
+        outputElements.mapArea.textContent = `${formatQuantity(plan.areaSqFt)} ft²`;
+        outputElements.mapOrder.textContent = `ORDER ${plan.orderVolumeCy.toFixed(1)} cy`;
+        outputElements.mapFrame.setAttribute(
+          "aria-label",
+          `Static map illustration. Typed slab area ${formatQuantity(plan.areaSqFt)} square feet; order volume ${plan.orderVolumeCy.toFixed(1)} cubic yards.`
+        );
+        outputElements.arrivalSpacing.textContent =
+          `${roundDisplayedMinutes(plan.arrivalSpacingMinutes)} min arrival spacing`;
+        outputElements.orderSummary.textContent = [
+          `CONCRETE ORDER: ${plan.orderVolumeCy.toFixed(1)} CY`,
+          `Loads: ${plan.loadCount} (${formatLoadBreakdown(plan)})`,
+          `First jobsite arrival: ${formatClockTime(values.firstArrivalMinutes)}`,
+          `Arrival spacing: every ${roundDisplayedMinutes(plan.arrivalSpacingMinutes)} minutes`
+        ].join("\n");
+      }
+
+      function updatePourSummary() {
+        const { values, errors } = readPourInputs();
+        if (errors.length > 0) {
+          outputElements.inputErrors.textContent = errors.join(" ");
+          outputElements.inputErrors.hidden = false;
+          setOutputsUnavailable();
+          return;
+        }
+
+        outputElements.inputErrors.textContent = "";
+        outputElements.inputErrors.hidden = true;
+        const plan = calculatePourPlan(values);
+        updateSummaryCards(plan, values);
+      }
+
+      document.getElementById("pour-inputs").addEventListener("submit", event => {
+        event.preventDefault();
+      });
+
+      for (const input of Object.values(inputs)) {
+        input.addEventListener("input", updatePourSummary);
+        input.addEventListener("change", updatePourSummary);
+      }
+
+      updatePourSummary();
+    </script>
   </body>
 </html>
