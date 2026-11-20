@@ -526,6 +526,11 @@
         white-space: nowrap;
       }
 
+      .summary-card.cost-card .summary-value {
+        font-size: clamp(16px, 5vw, 23px);
+        letter-spacing: -0.05em;
+      }
+
       .summary-value small {
         color: #667481;
         font-size: 12px;
@@ -1134,6 +1139,14 @@
                     <span class="field-hint">Range: 0-60%</span>
                   </div>
                   <div class="field">
+                    <label for="price-per-cy">Concrete price per cubic yard</label>
+                    <div class="input-wrap">
+                      <input id="price-per-cy" type="number" value="175" min="0" step="any">
+                      <span class="unit">$/cy</span>
+                    </div>
+                    <span class="field-hint">Minimum: $0.00 per cy</span>
+                  </div>
+                  <div class="field">
                     <label for="capacity">Truck capacity</label>
                     <div class="input-wrap">
                       <input id="capacity" type="number" value="10" min="1" max="12" step="any">
@@ -1194,6 +1207,10 @@
             <article class="summary-card primary">
               <span class="summary-label">Concrete to order</span>
               <strong class="summary-value"><span id="order-volume-output">47.0</span> <small>cy</small></strong>
+            </article>
+            <article class="summary-card cost-card">
+              <span class="summary-label">Estimated material cost</span>
+              <strong class="summary-value" id="material-cost-output">$8,225.00</strong>
             </article>
             <article class="summary-card">
               <span class="summary-label">Truckloads</span>
@@ -1276,6 +1293,7 @@ Arrival spacing: every 20 minutes</pre>
         width: document.getElementById("slab-width"),
         thickness: document.getElementById("thickness"),
         waste: document.getElementById("waste"),
+        pricePerCy: document.getElementById("price-per-cy"),
         capacity: document.getElementById("capacity"),
         placementRate: document.getElementById("placement-rate"),
         travelTime: document.getElementById("travel-time"),
@@ -1285,6 +1303,7 @@ Arrival spacing: every 20 minutes</pre>
 
       const outputElements = {
         orderVolume: document.getElementById("order-volume-output"),
+        materialCost: document.getElementById("material-cost-output"),
         loadCount: document.getElementById("load-count-output"),
         truckCount: document.getElementById("truck-count-output"),
         pourDuration: document.getElementById("pour-duration-output"),
@@ -1314,6 +1333,7 @@ Arrival spacing: every 20 minutes</pre>
         width: "Width",
         thickness: "Slab thickness",
         waste: "Waste allowance",
+        pricePerCy: "Concrete price per cubic yard",
         capacity: "Truck capacity",
         placementRate: "Placement rate",
         travelTime: "One-way travel time",
@@ -1361,14 +1381,17 @@ Arrival spacing: every 20 minutes</pre>
         const rawValue = input.value.trim();
         const value = Number(rawValue);
         const minimum = Number(input.min);
-        const maximum = Number(input.max);
+        const maximum = input.max === "" ? null : Number(input.max);
 
         if (rawValue === "" || !Number.isFinite(value)) {
           return { error: `${label} must be a number.` };
         }
 
-        if (value < minimum || value > maximum) {
-          return { error: `${label} must be between ${minimum} and ${maximum}.` };
+        if (value < minimum || (maximum !== null && value > maximum)) {
+          const range = maximum === null
+            ? `at least ${minimum}`
+            : `between ${minimum} and ${maximum}`;
+          return { error: `${label} must be ${range}.` };
         }
 
         return { value };
@@ -1443,6 +1466,10 @@ Arrival spacing: every 20 minutes</pre>
       function calculateUnroundedOrderVolumeCy(areaSqFt, thicknessIn, wastePercent) {
         const slabVolumeCy = areaSqFt * thicknessIn / 12 / 27;
         return slabVolumeCy * (1 + wastePercent / 100);
+      }
+
+      function calculateMaterialCostUsd(orderVolumeCy, pricePerCy) {
+        return orderVolumeCy * pricePerCy;
       }
 
       function roundOrderVolumeUpToHalfYard(unroundedVolumeCy) {
@@ -1535,7 +1562,8 @@ Arrival spacing: every 20 minutes</pre>
           arrivalSpacingMinutes,
           pourDurationMinutes,
           finishTimeMinutes,
-          truckCapacityCy: values.capacity
+          truckCapacityCy: values.capacity,
+          materialCostUsd: calculateMaterialCostUsd(orderVolumeCy, values.pricePerCy)
         };
       }
 
@@ -2149,6 +2177,13 @@ Arrival spacing: every 20 minutes</pre>
         }).format(value);
       }
 
+      function formatCurrency(value) {
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD"
+        }).format(value);
+      }
+
       function formatDuration(minutes) {
         const roundedMinutes = roundDisplayedMinutes(minutes);
         const hours = Math.floor(roundedMinutes / 60);
@@ -2375,6 +2410,7 @@ Arrival spacing: every 20 minutes</pre>
 
       function setOutputsUnavailable() {
         outputElements.orderVolume.textContent = "--";
+        outputElements.materialCost.textContent = "--";
         outputElements.loadCount.textContent = "--";
         outputElements.truckCount.textContent = "--";
         outputElements.pourDuration.textContent = "--";
@@ -2389,6 +2425,7 @@ Arrival spacing: every 20 minutes</pre>
 
       function updateSummaryCards(plan, values, geometryCenter) {
         outputElements.orderVolume.textContent = plan.orderVolumeCy.toFixed(1);
+        outputElements.materialCost.textContent = formatCurrency(plan.materialCostUsd);
         outputElements.loadCount.textContent = String(plan.loadCount);
         outputElements.truckCount.textContent = String(plan.truckCount);
         outputElements.pourDuration.textContent = formatDuration(plan.pourDurationMinutes);
@@ -2399,6 +2436,8 @@ Arrival spacing: every 20 minutes</pre>
         outputElements.orderSummary.textContent = [
           `CONCRETE ORDER: ${plan.orderVolumeCy.toFixed(1)} CY`,
           `Loads: ${plan.loadCount} (${formatLoadBreakdown(plan)})`,
+          `Concrete price: ${formatCurrency(values.pricePerCy)} per cy`,
+          `Total material cost: ${formatCurrency(plan.materialCostUsd)}`,
           `First jobsite arrival: ${formatClockTime(values.firstArrivalMinutes)}`,
           `Arrival spacing: every ${roundDisplayedMinutes(plan.arrivalSpacingMinutes)} minutes`
         ].join("\n");

@@ -79,6 +79,15 @@ from 1:10 to 1:24 AM next day.
 All expected results matched the actual calculation outputs. No calculation
 errors were found.
 
+## Concrete Cost Estimator
+
+The following estimator cases were tested and confirmed:
+
+| Rounded order quantity | Price per cubic yard | Expected material cost | Confirmed result |
+| --- | --- | --- | --- |
+| 47 cy | $175.00 | $8,225.00 | $8,225.00 |
+| 47 cy | $200.00 | $9,400.00 | $9,400.00 |
+
 ## Satellite Map Area Comparison
 
 Add one row per building after measuring its footprint in both the Concrete
