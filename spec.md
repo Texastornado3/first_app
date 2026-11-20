@@ -71,3 +71,20 @@ All numeric ranges are inclusive.
 - Live routing, traffic, route optimization, and actual order submission; the user supplies travel time, and the app only prepares copyable order text.
 - Saving or loading plans and server-side storage. The app does not persist plans or provide an app-controlled export; the order can be copied to the clipboard.
 - Offline operation; the app depends on the external Leaflet CDN and map tiles.
+
+## Build stages
+1. **Static page mockup**
+   - Build the page layout in the single `index.html`, using a placeholder map and static sample inputs and results. Do not implement map interactions or calculations.
+   - Test that the desktop two-column layout and the specified phone stacking order are clear, readable, and keyboard accessible.
+2. **Map and geometry controls**
+   - Add Leaflet and the specified imagery tiles, initial 40 ft x 60 ft rectangle, geometry mode switch, typed dimensions, map drawing, and draggable corners. Keep results static; do not add calculations.
+   - Test map center, zoom, and attribution; rectangle updates from typed dimensions; drawing completion by either specified gesture; corner dragging; and mode switching without geometry conversion.
+3. **Area and order-volume calculations**
+   - Calculate typed and drawn slab area, volume including waste, and 0.5 cy order rounding. Update the map label and concrete-to-order output; leave truck and schedule results static.
+   - Test the area and order-volume results in Validation 1–3, the exact and just-above rounding boundary checks, and invalid-input feedback.
+4. **Loads and pour calculations**
+   - Calculate load count and final load size, unload times, truck arrival spacing, truck cycle and rotation count, pour duration, and finish time.
+   - Test Validation 1 and 3, including the 70-minute cycle, four-truck rotation, partial final load, and the cap of one truck for one load. Check that an exact truck-capacity multiple does not add a load.
+5. **Schedule, order copy, and final interaction checks**
+   - Render the truck timeline with load and truck identifiers, activity segments, and accessible times. Add the copyable order summary and copy success/failure feedback; complete responsive and accessibility checks.
+   - Test timeline segments against Validation 1, next-day times in Validation 4, fractional-minute rounding, copy behavior, and timeline usability by hover, keyboard focus, and tap on desktop and phone.
