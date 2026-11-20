@@ -645,6 +645,7 @@
       }
 
       .timeline-canvas {
+        width: var(--timeline-width, 740px);
         min-width: 740px;
       }
 
@@ -701,33 +702,74 @@
       }
 
       .track {
-        display: grid;
-        grid-template-columns: repeat(150, minmax(0, 1fr));
-        align-items: center;
+        position: relative;
         min-width: 0;
-        background-image: repeating-linear-gradient(
-          to right,
-          transparent 0,
-          transparent calc(100% / 15 - 1px),
-          #edf1f2 calc(100% / 15 - 1px),
-          #edf1f2 calc(100% / 15)
-        );
+        background-image: linear-gradient(to right, #edf1f2 1px, transparent 1px);
+        background-size: var(--timeline-tick-spacing, 10%) 100%;
       }
 
       .segment {
+        position: absolute;
+        top: 50%;
         z-index: 1;
         display: flex;
-        overflow: hidden;
+        overflow: visible;
         height: 25px;
         align-items: center;
         justify-content: center;
+        padding: 0 2px;
         border: 1px solid rgba(40, 61, 76, 0.12);
         border-radius: 4px;
         color: #334756;
+        appearance: none;
+        font-family: inherit;
         font-size: 8px;
         font-weight: 750;
         line-height: 1;
+        text-align: center;
+        transform: translateY(-50%);
         white-space: nowrap;
+        cursor: help;
+      }
+
+      .segment-label {
+        display: block;
+        overflow: hidden;
+        text-overflow: clip;
+      }
+
+      .segment::after {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        z-index: 5;
+        padding: 5px 7px;
+        border-radius: 4px;
+        background: #20313c;
+        color: #ffffff;
+        content: attr(data-tooltip);
+        font-size: 10px;
+        font-weight: 650;
+        line-height: 1.3;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 3px);
+        transition: opacity 100ms ease, transform 100ms ease, visibility 100ms ease;
+        visibility: hidden;
+        white-space: nowrap;
+      }
+
+      .segment:hover::after,
+      .segment:focus::after,
+      .segment:active::after {
+        opacity: 1;
+        transform: translate(-50%, 0);
+        visibility: visible;
+      }
+
+      .segment:focus-visible {
+        outline: 2px solid #20313c;
+        outline-offset: 2px;
       }
 
       .segment.travel {
@@ -1022,7 +1064,7 @@
       </div>
       <div class="topbar-meta">
         <span class="location-pill"><span class="location-dot"></span>BYU campus · Provo, UT</span>
-        <span class="mockup-pill">Stage 3 map</span>
+        <span class="mockup-pill">Stage 4 schedule</span>
       </div>
     </header>
 
@@ -1032,7 +1074,7 @@
           <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
           <path d="M12 10.5v5M12 7.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <p><strong>Interactive slab mapping is active.</strong> Typed and drawn slab areas feed the calculations; the truck timeline remains a static sample in this stage.</p>
+        <p><strong>Interactive slab mapping is active.</strong> The truck timeline updates from the current slab and delivery inputs.</p>
       </aside>
 
       <div class="workspace">
@@ -1205,7 +1247,7 @@
             <div class="panel-head">
               <div>
                 <h2 id="schedule-title">Truck schedule</h2>
-                <p class="panel-subtitle">Static sample timeline · segment times do not update in this stage</p>
+                <p class="panel-subtitle">Calculated truck rotation · live schedule</p>
               </div>
               <span class="schedule-meta"><span class="meta-dot"></span><span id="arrival-spacing-output">20 min arrival spacing</span></span>
             </div>
@@ -1215,70 +1257,15 @@
               <span class="legend-item"><span class="legend-swatch return-color"></span>Travel back</span>
               <span class="legend-item"><span class="legend-swatch wash-color"></span>Washout/reload</span>
             </div>
-            <div class="timeline-scroll" tabindex="0" aria-label="Scrollable static truck schedule">
-              <div class="timeline-canvas">
-                <div class="time-ruler" aria-hidden="true">
-                  <span class="time-tick first" style="left: 0%">6:40 AM</span>
-                  <span class="time-tick" style="left: 13.333%">7:00</span>
-                  <span class="time-tick" style="left: 26.667%">7:20</span>
-                  <span class="time-tick" style="left: 40%">7:40</span>
-                  <span class="time-tick" style="left: 53.333%">8:00</span>
-                  <span class="time-tick" style="left: 66.667%">8:20</span>
-                  <span class="time-tick" style="left: 80%">8:40</span>
-                  <span class="time-tick" style="left: 93.333%">9:00</span>
-                  <span class="time-tick last" style="left: 100%">9:10</span>
-                </div>
-
-                <div class="schedule-row">
-                  <div class="row-label"><strong>Load 1 · Truck 1</strong><span>10 cy · arrives 7:00</span></div>
-                  <div class="track">
-                    <span class="segment travel" style="grid-column: 1 / 21" title="Travel to site, 6:40-7:00 AM" aria-label="Travel to site, 6:40 to 7:00 AM"><span aria-hidden="true">To site</span></span>
-                    <span class="segment unload" style="grid-column: 21 / 41" title="Unloading, 7:00-7:20 AM" aria-label="Unloading, 7:00 to 7:20 AM"><span aria-hidden="true">Unload</span></span>
-                    <span class="segment return" style="grid-column: 41 / 61" title="Travel back, 7:20-7:40 AM" aria-label="Travel back, 7:20 to 7:40 AM"><span aria-hidden="true">Return</span></span>
-                    <span class="segment wash" style="grid-column: 61 / 71" title="Washout/reload, 7:40-7:50 AM" aria-label="Washout and reload, 7:40 to 7:50 AM"><span aria-hidden="true">Wash</span></span>
-                  </div>
-                </div>
-                <div class="schedule-row">
-                  <div class="row-label"><strong>Load 2 · Truck 2</strong><span>10 cy · arrives 7:20</span></div>
-                  <div class="track">
-                    <span class="segment travel" style="grid-column: 21 / 41" title="Travel to site, 7:00-7:20 AM" aria-label="Travel to site, 7:00 to 7:20 AM"><span aria-hidden="true">To site</span></span>
-                    <span class="segment unload" style="grid-column: 41 / 61" title="Unloading, 7:20-7:40 AM" aria-label="Unloading, 7:20 to 7:40 AM"><span aria-hidden="true">Unload</span></span>
-                    <span class="segment return" style="grid-column: 61 / 81" title="Travel back, 7:40-8:00 AM" aria-label="Travel back, 7:40 to 8:00 AM"><span aria-hidden="true">Return</span></span>
-                    <span class="segment wash" style="grid-column: 81 / 91" title="Washout/reload, 8:00-8:10 AM" aria-label="Washout and reload, 8:00 to 8:10 AM"><span aria-hidden="true">Wash</span></span>
-                  </div>
-                </div>
-                <div class="schedule-row">
-                  <div class="row-label"><strong>Load 3 · Truck 3</strong><span>10 cy · arrives 7:40</span></div>
-                  <div class="track">
-                    <span class="segment travel" style="grid-column: 41 / 61" title="Travel to site, 7:20-7:40 AM" aria-label="Travel to site, 7:20 to 7:40 AM"><span aria-hidden="true">To site</span></span>
-                    <span class="segment unload" style="grid-column: 61 / 81" title="Unloading, 7:40-8:00 AM" aria-label="Unloading, 7:40 to 8:00 AM"><span aria-hidden="true">Unload</span></span>
-                    <span class="segment return" style="grid-column: 81 / 101" title="Travel back, 8:00-8:20 AM" aria-label="Travel back, 8:00 to 8:20 AM"><span aria-hidden="true">Return</span></span>
-                    <span class="segment wash" style="grid-column: 101 / 111" title="Washout/reload, 8:20-8:30 AM" aria-label="Washout and reload, 8:20 to 8:30 AM"><span aria-hidden="true">Wash</span></span>
-                  </div>
-                </div>
-                <div class="schedule-row">
-                  <div class="row-label"><strong>Load 4 · Truck 4</strong><span>10 cy · arrives 8:00</span></div>
-                  <div class="track">
-                    <span class="segment travel" style="grid-column: 61 / 81" title="Travel to site, 7:40-8:00 AM" aria-label="Travel to site, 7:40 to 8:00 AM"><span aria-hidden="true">To site</span></span>
-                    <span class="segment unload" style="grid-column: 81 / 101" title="Unloading, 8:00-8:20 AM" aria-label="Unloading, 8:00 to 8:20 AM"><span aria-hidden="true">Unload</span></span>
-                    <span class="segment return" style="grid-column: 101 / 121" title="Travel back, 8:20-8:40 AM" aria-label="Travel back, 8:20 to 8:40 AM"><span aria-hidden="true">Return</span></span>
-                    <span class="segment wash" style="grid-column: 121 / 131" title="Washout/reload, 8:40-8:50 AM" aria-label="Washout and reload, 8:40 to 8:50 AM"><span aria-hidden="true">Wash</span></span>
-                  </div>
-                </div>
-                <div class="schedule-row">
-                  <div class="row-label"><strong>Load 5 · Truck 1</strong><span>7 cy · arrives 8:20</span></div>
-                  <div class="track">
-                    <span class="segment travel" style="grid-column: 81 / 101" title="Travel to site, 8:00-8:20 AM" aria-label="Travel to site, 8:00 to 8:20 AM"><span aria-hidden="true">To site</span></span>
-                    <span class="segment unload" style="grid-column: 101 / 115" title="Unloading, 8:20-8:34 AM" aria-label="Unloading, 8:20 to 8:34 AM"><span aria-hidden="true">Unload</span></span>
-                    <span class="segment return" style="grid-column: 115 / 135" title="Travel back, 8:34-8:54 AM" aria-label="Travel back, 8:34 to 8:54 AM"><span aria-hidden="true">Return</span></span>
-                    <span class="segment wash" style="grid-column: 135 / 145" title="Washout/reload, 8:54-9:04 AM" aria-label="Washout and reload, 8:54 to 9:04 AM"><span aria-hidden="true">Wash</span></span>
-                  </div>
-                </div>
+            <div class="timeline-scroll" tabindex="0" aria-label="Scrollable truck schedule timeline">
+              <div class="timeline-canvas" id="timeline-canvas">
+                <div class="time-ruler" id="timeline-ruler" aria-hidden="true"></div>
+                <div id="timeline-rows"></div>
               </div>
             </div>
             <div class="schedule-foot">
-              <span>Times are jobsite local · timeline rows are static sample values</span>
-              <span class="duration-note">Pour complete 8:34 AM</span>
+              <span id="schedule-time-note">Times are jobsite local</span>
+              <span class="duration-note" id="schedule-finish-note">Pour complete 8:34 AM</span>
             </div>
           </section>
 
@@ -1308,8 +1295,8 @@ Arrival spacing: every 20 minutes</pre>
       </div>
 
       <footer class="page-foot">
-        <span>Concrete pour planner · Stage 3 map</span>
-        <span>Truck schedule remains a static sample</span>
+        <span>Concrete pour planner · Stage 4 live truck schedule</span>
+        <span>Schedule updates with current inputs</span>
       </footer>
     </main>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1334,6 +1321,11 @@ Arrival spacing: every 20 minutes</pre>
         finishTime: document.getElementById("finish-time-output"),
         arrivalSpacing: document.getElementById("arrival-spacing-output"),
         orderSummary: document.getElementById("order-summary-output"),
+        timelineCanvas: document.getElementById("timeline-canvas"),
+        timelineRuler: document.getElementById("timeline-ruler"),
+        timelineRows: document.getElementById("timeline-rows"),
+        scheduleTimeNote: document.getElementById("schedule-time-note"),
+        scheduleFinishNote: document.getElementById("schedule-finish-note"),
         mapStatus: document.getElementById("map-imagery-status"),
         mapFeedback: document.getElementById("map-feedback"),
         geometryCaption: document.getElementById("geometry-caption"),
@@ -1566,10 +1558,104 @@ Arrival spacing: every 20 minutes</pre>
           loadCount,
           truckCount,
           finalLoadVolumeCy,
+          finalLoadUnloadMinutes,
           arrivalSpacingMinutes,
           pourDurationMinutes,
           finishTimeMinutes,
           truckCapacityCy: values.capacity
+        };
+      }
+
+      function calculateTruckSchedule(plan, values) {
+        const rows = [];
+        for (let loadIndex = 0; loadIndex < plan.loadCount; loadIndex += 1) {
+          const arrivalMinutes =
+            values.firstArrivalMinutes + loadIndex * plan.arrivalSpacingMinutes;
+          const isFinalLoad = loadIndex === plan.loadCount - 1;
+          const unloadMinutes = isFinalLoad
+            ? plan.finalLoadUnloadMinutes
+            : plan.arrivalSpacingMinutes;
+          const travelStartMinutes = arrivalMinutes - values.travelTime;
+          const unloadEndMinutes = arrivalMinutes + unloadMinutes;
+          const returnEndMinutes = unloadEndMinutes + values.travelTime;
+          const reloadEndMinutes = returnEndMinutes + values.washoutTime;
+
+          rows.push({
+            loadNumber: loadIndex + 1,
+            truckNumber: loadIndex % plan.truckCount + 1,
+            volumeCy: isFinalLoad ? plan.finalLoadVolumeCy : plan.truckCapacityCy,
+            arrivalMinutes,
+            segments: [
+              {
+                type: "travel",
+                label: "Travel to site",
+                shortLabel: "To site",
+                startMinutes: travelStartMinutes,
+                endMinutes: arrivalMinutes
+              },
+              {
+                type: "unload",
+                label: "Unloading",
+                shortLabel: "Unload",
+                startMinutes: arrivalMinutes,
+                endMinutes: unloadEndMinutes
+              },
+              {
+                type: "return",
+                label: "Travel back to batch plant",
+                shortLabel: "Return",
+                startMinutes: unloadEndMinutes,
+                endMinutes: returnEndMinutes
+              },
+              {
+                type: "wash",
+                label: "Washout/reload",
+                shortLabel: "Wash",
+                startMinutes: returnEndMinutes,
+                endMinutes: reloadEndMinutes
+              }
+            ]
+          });
+        }
+
+        return {
+          rows,
+          startMinutes: rows[0].segments[0].startMinutes,
+          endMinutes: rows.at(-1).segments.at(-1).endMinutes,
+          finishTimeMinutes: plan.finishTimeMinutes
+        };
+      }
+
+      function chooseTimelineTickInterval(spanMinutes) {
+        const targetInterval = spanMinutes / 8;
+        const commonIntervals = [5, 10, 15, 20, 30, 60, 120, 180, 360, 720, 1440];
+        return commonIntervals.find(interval => interval >= targetInterval) ||
+          Math.ceil(targetInterval / 1440) * 1440;
+      }
+
+      function calculateTimelineAxis(schedule) {
+        const tickInterval = chooseTimelineTickInterval(
+          schedule.endMinutes - schedule.startMinutes
+        );
+        const startMinutes = Math.floor(schedule.startMinutes / tickInterval) * tickInterval;
+        const endMinutes = Math.ceil(schedule.endMinutes / tickInterval) * tickInterval;
+        const spanMinutes = Math.max(tickInterval, endMinutes - startMinutes);
+        const trackWidthPx = Math.max(618, spanMinutes * 4);
+        const scalePxPerMinute = trackWidthPx / spanMinutes;
+        const ticks = [];
+        for (let time = startMinutes; time <= endMinutes; time += tickInterval) {
+          ticks.push(time);
+        }
+
+        return {
+          startMinutes,
+          endMinutes,
+          spanMinutes,
+          tickInterval,
+          tickSpacingPercent: tickInterval / spanMinutes * 100,
+          trackWidthPx,
+          scalePxPerMinute,
+          ticks
         };
       }
 
@@ -2103,16 +2189,22 @@ Arrival spacing: every 20 minutes</pre>
       function formatClockTime(totalMinutes) {
         const roundedTotalMinutes = roundDisplayedMinutes(totalMinutes);
         const dayOffset = Math.floor(roundedTotalMinutes / (24 * 60));
-        const minutesInDay = roundedTotalMinutes % (24 * 60);
+        const minutesInDay =
+          ((roundedTotalMinutes % (24 * 60)) + 24 * 60) % (24 * 60);
         const hour24 = Math.floor(minutesInDay / 60);
         const minute = minutesInDay % 60;
         const period = hour24 < 12 ? "AM" : "PM";
         const hour12 = hour24 % 12 || 12;
-        const dayLabel = dayOffset === 1
-          ? " (next day)"
-          : dayOffset > 1
-            ? ` (+${dayOffset} days)`
-            : "";
+        let dayLabel = "";
+        if (dayOffset === 1) {
+          dayLabel = " (next day)";
+        } else if (dayOffset === -1) {
+          dayLabel = " (previous day)";
+        } else if (dayOffset > 1) {
+          dayLabel = ` (+${dayOffset} days)`;
+        } else if (dayOffset < -1) {
+          dayLabel = ` (${Math.abs(dayOffset)} days earlier)`;
+        }
 
         return `${hour12}:${String(minute).padStart(2, "0")} ${period}${dayLabel}`;
       }
@@ -2129,6 +2221,104 @@ Arrival spacing: every 20 minutes</pre>
         return `${fullLoadText}1 x ${formatQuantity(plan.finalLoadVolumeCy)} cy`;
       }
 
+      function createTimelineSegment(segment, axis) {
+        const button = document.createElement("button");
+        const startPercent =
+          (segment.startMinutes - axis.startMinutes) / axis.spanMinutes * 100;
+        const widthPercent = Math.max(
+          (segment.endMinutes - segment.startMinutes) / axis.spanMinutes * 100,
+          2 / axis.trackWidthPx * 100
+        );
+        const tooltip =
+          `${segment.label}, ${formatClockTime(segment.startMinutes)} to ${formatClockTime(segment.endMinutes)}`;
+
+        button.type = "button";
+        button.className = `segment ${segment.type}`;
+        button.style.left = `${startPercent}%`;
+        button.style.width = `${widthPercent}%`;
+        button.dataset.tooltip = tooltip;
+        button.title = tooltip;
+        button.setAttribute("aria-label", tooltip);
+
+        const label = document.createElement("span");
+        label.className = "segment-label";
+        label.textContent = segment.shortLabel;
+        label.setAttribute("aria-hidden", "true");
+        button.append(label);
+        return button;
+      }
+
+      function renderTruckSchedule(schedule) {
+        const axis = calculateTimelineAxis(schedule);
+        outputElements.timelineCanvas.style.setProperty(
+          "--timeline-width",
+          `${axis.trackWidthPx + 122}px`
+        );
+        outputElements.timelineRuler.replaceChildren();
+        outputElements.timelineRows.replaceChildren();
+
+        axis.ticks.forEach((time, index) => {
+          const tick = document.createElement("span");
+          tick.className = "time-tick";
+          if (index === 0) {
+            tick.classList.add("first");
+          }
+          if (index === axis.ticks.length - 1) {
+            tick.classList.add("last");
+          }
+          tick.style.left =
+            `${(time - axis.startMinutes) / axis.spanMinutes * 100}%`;
+          tick.textContent = formatClockTime(time);
+          outputElements.timelineRuler.append(tick);
+        });
+
+        outputElements.timelineRows.style.setProperty(
+          "--timeline-tick-spacing",
+          `${axis.tickSpacingPercent}%`
+        );
+        for (const scheduledLoad of schedule.rows) {
+          const row = document.createElement("div");
+          row.className = "schedule-row";
+
+          const rowLabel = document.createElement("div");
+          rowLabel.className = "row-label";
+          const title = document.createElement("strong");
+          title.textContent =
+            `Load ${scheduledLoad.loadNumber} · Truck ${scheduledLoad.truckNumber}`;
+          const details = document.createElement("span");
+          details.textContent =
+            `${formatQuantity(scheduledLoad.volumeCy)} cy · arrives ${formatClockTime(scheduledLoad.arrivalMinutes)}`;
+          rowLabel.append(title, details);
+
+          const track = document.createElement("div");
+          track.className = "track";
+          track.style.setProperty(
+            "--timeline-tick-spacing",
+            `${axis.tickSpacingPercent}%`
+          );
+          for (const segment of scheduledLoad.segments) {
+            track.append(createTimelineSegment(segment, axis));
+          }
+
+          row.append(rowLabel, track);
+          outputElements.timelineRows.append(row);
+        }
+
+        outputElements.scheduleTimeNote.textContent =
+          "Times are jobsite local · segment times round to nearest minute";
+        outputElements.scheduleFinishNote.textContent =
+          `Pour complete ${formatClockTime(schedule.finishTimeMinutes)}`;
+      }
+
+      function clearTruckSchedule() {
+        outputElements.timelineCanvas.style.removeProperty("--timeline-width");
+        outputElements.timelineRuler.replaceChildren();
+        outputElements.timelineRows.replaceChildren();
+        outputElements.scheduleTimeNote.textContent =
+          "Schedule unavailable until all inputs are valid";
+        outputElements.scheduleFinishNote.textContent = "Pour completion unavailable";
+      }
+
       function setOutputsUnavailable() {
         outputElements.orderVolume.textContent = "--";
         outputElements.loadCount.textContent = "--";
@@ -2138,6 +2328,7 @@ Arrival spacing: every 20 minutes</pre>
         outputElements.arrivalSpacing.textContent = "Arrival spacing unavailable";
         outputElements.orderSummary.textContent = "Order summary unavailable until all inputs are valid.";
         clearMeasurementMarker();
+        clearTruckSchedule();
       }
 
       function updateSummaryCards(plan, values, geometryCenter) {
@@ -2172,6 +2363,7 @@ Arrival spacing: every 20 minutes</pre>
         outputElements.inputErrors.hidden = true;
         const plan = calculatePourPlan(values, geometry.areaSqFt);
         updateSummaryCards(plan, values, geometry.center);
+        renderTruckSchedule(calculateTruckSchedule(plan, values));
       }
 
       function bindMapControls() {
