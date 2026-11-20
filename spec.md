@@ -15,7 +15,7 @@ All numeric ranges are inclusive.
 - Slab geometry has two modes, selected with a "Draw on map" / "Enter dimensions" switch. The initial slab is a 40 ft x 60 ft rectangle shown on the map, with the dimension fields set to match.
   - The initial mode is "Enter dimensions"; the active mode determines which geometry is used for calculations. Switching modes does not convert one geometry into the other.
   - Draw-on-map control: a "Draw slab" button starts drawing; click the corners and double-click (or click the first point) to finish. Corners can be dragged afterward. An outline must have at least three distinct corners, nonzero area, and no self-intersections.
-  - Dimensions control: numeric length and width fields in feet, each from 1 to 50 ft. The rectangle is drawn on the map at the map center.
+  - Dimensions control: numeric length from 1 to 50 ft and width from 1 to 100 ft. The rectangle is drawn on the map at the map center.
   - The map opens centered on BYU campus (40.2518, -111.6493) at zoom 18.
 - Slab thickness: numeric field in inches, 1–24 in, default 6.
 - Waste allowance: numeric field in percent, 0–60%, default 5%.

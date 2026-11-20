@@ -1,0 +1,1305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Static layout mockup for a concrete pour planning app.">
+    <title>Concrete Pour Planner</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #1d2935;
+        --muted: #647282;
+        --line: #e2e8ed;
+        --panel: #ffffff;
+        --page: #f3f6f7;
+        --teal: #126a63;
+        --teal-dark: #0e554f;
+        --teal-pale: #e7f4f1;
+        --blue-pale: #e7effb;
+        --blue-ink: #315d91;
+        --purple-pale: #f0eafa;
+        --purple-ink: #70509b;
+        --amber-pale: #fff1d2;
+        --amber-ink: #8b5a12;
+        --shadow: 0 8px 24px rgba(27, 46, 61, 0.06);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--ink);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid #78b9b1;
+        outline-offset: 2px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 18px 30px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        flex: 0 0 auto;
+        border-radius: 12px;
+        background: var(--teal);
+        color: white;
+      }
+
+      .brand-mark svg {
+        width: 23px;
+        height: 23px;
+      }
+
+      .brand-kicker,
+      .eyebrow {
+        margin: 0;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin: 1px 0 0;
+        font-size: 20px;
+        letter-spacing: -0.035em;
+        line-height: 1.2;
+      }
+
+      .topbar-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .location-pill,
+      .mockup-pill,
+      .default-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+        padding: 7px 11px;
+        white-space: nowrap;
+      }
+
+      .location-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--teal);
+      }
+
+      .mockup-pill {
+        border-color: #e7c77f;
+        background: #fff8e9;
+        color: #76520e;
+      }
+
+      main {
+        width: min(1540px, 100%);
+        margin: 0 auto;
+        padding: 22px 26px 34px;
+      }
+
+      .preview-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        margin-bottom: 18px;
+        padding: 12px 15px;
+        border: 1px solid #efd89c;
+        border-radius: 12px;
+        background: #fff9eb;
+        color: #5f4b24;
+        font-size: 13px;
+      }
+
+      .preview-notice svg {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+        color: #9c7016;
+      }
+
+      .preview-notice p {
+        margin: 0;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(380px, 0.94fr) minmax(500px, 1.06fr);
+        align-items: start;
+        gap: 20px;
+      }
+
+      .left-column,
+      .results-column {
+        display: grid;
+        gap: 18px;
+        min-width: 0;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 17px 18px 14px;
+      }
+
+      .panel-head h2,
+      .panel-head h3 {
+        margin: 0;
+        font-size: 15px;
+        letter-spacing: -0.015em;
+      }
+
+      .panel-subtitle {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .map-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .mode-switch {
+        display: inline-flex;
+        gap: 3px;
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #f7f9fa;
+      }
+
+      .mode-switch button {
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--muted);
+        cursor: default;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 7px 9px;
+        white-space: nowrap;
+      }
+
+      .mode-switch button[aria-pressed="true"] {
+        background: #fff;
+        color: var(--teal-dark);
+        box-shadow: 0 1px 4px rgba(24, 42, 52, 0.12);
+      }
+
+      .map-frame {
+        position: relative;
+        overflow: hidden;
+        margin: 0 12px;
+        min-height: 300px;
+        border: 1px solid #d6dfd8;
+        border-radius: 11px;
+        background: #e7ece3;
+      }
+
+      .map-art {
+        display: block;
+        width: 100%;
+        height: 330px;
+      }
+
+      .map-tag,
+      .map-tools,
+      .map-compass {
+        position: absolute;
+        z-index: 1;
+      }
+
+      .map-tag {
+        top: 12px;
+        left: 12px;
+        max-width: calc(100% - 24px);
+        padding: 7px 10px;
+        border: 1px solid rgba(218, 226, 221, 0.9);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.94);
+        color: #42514c;
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .map-tools {
+        top: 12px;
+        right: 12px;
+        display: grid;
+        gap: 5px;
+      }
+
+      .map-tools span {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border: 1px solid #dce3df;
+        border-radius: 7px;
+        background: #fff;
+        color: #34443e;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .map-compass {
+        right: 14px;
+        bottom: 13px;
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.92);
+        color: #51615b;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .map-note {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 17px 15px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .map-note strong {
+        color: #4a5a54;
+        font-weight: 650;
+      }
+
+      .map-legend {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .outline-key {
+        width: 10px;
+        height: 10px;
+        border: 2px solid #0a6c68;
+        border-radius: 2px;
+        background: #9edbd0;
+      }
+
+      .inputs-panel {
+        padding-bottom: 16px;
+      }
+
+      .inputs-panel .panel-head {
+        padding-bottom: 12px;
+      }
+
+      .default-pill {
+        border-color: #cfe7df;
+        background: #f1faf6;
+        color: var(--teal-dark);
+        font-size: 10px;
+        padding: 5px 9px;
+      }
+
+      .input-form {
+        padding: 0 17px;
+      }
+
+      .field-group {
+        padding: 12px 0 13px;
+        border-top: 1px solid #edf0f2;
+      }
+
+      .field-group:first-child {
+        border-top: 0;
+        padding-top: 5px;
+      }
+
+      .field-group-title {
+        margin: 0 0 9px;
+        color: #41515f;
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 0.045em;
+        text-transform: uppercase;
+      }
+
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 12px;
+      }
+
+      .field {
+        min-width: 0;
+      }
+
+      .field label {
+        display: block;
+        margin-bottom: 5px;
+        color: #334351;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .input-wrap {
+        position: relative;
+      }
+
+      .field input {
+        display: block;
+        width: 100%;
+        height: 39px;
+        padding: 8px 43px 8px 10px;
+        border: 1px solid #d8e0e5;
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 650;
+      }
+
+      .field input[type="time"] {
+        padding-right: 9px;
+      }
+
+      .unit {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        color: #74818c;
+        font-size: 11px;
+        pointer-events: none;
+      }
+
+      .field-hint {
+        display: block;
+        margin-top: 4px;
+        color: #73808b;
+        font-size: 10px;
+      }
+
+      .single-field {
+        max-width: 240px;
+      }
+
+      .hint-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        margin: 0 17px;
+        padding: 10px 11px;
+        border-radius: 9px;
+        background: #f1f7f5;
+        color: #3d5c56;
+        font-size: 11px;
+      }
+
+      .hint-box strong {
+        display: block;
+        margin-bottom: 1px;
+      }
+
+      .hint-icon {
+        display: grid;
+        width: 19px;
+        height: 19px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 50%;
+        background: #d7ebe5;
+        color: var(--teal-dark);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+      }
+
+      .summary-card {
+        min-height: 105px;
+        padding: 14px 14px 12px;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .summary-label {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
+      .summary-value {
+        display: block;
+        color: #1b2b35;
+        font-size: clamp(20px, 2vw, 26px);
+        font-weight: 760;
+        letter-spacing: -0.045em;
+        line-height: 1.05;
+        white-space: nowrap;
+      }
+
+      .summary-value small {
+        color: #667481;
+        font-size: 12px;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+
+      .summary-card.primary {
+        border-color: #b8ddd5;
+        background: linear-gradient(145deg, #f1faf7, #ffffff 78%);
+      }
+
+      .summary-card.primary .summary-value {
+        color: var(--teal-dark);
+      }
+
+      .schedule-panel {
+        overflow: hidden;
+      }
+
+      .schedule-meta {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #53636e;
+        font-size: 11px;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+
+      .meta-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #2a8b7b;
+      }
+
+      .legend {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px 13px;
+        padding: 0 17px 13px;
+        color: #64727d;
+        font-size: 10px;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .legend-swatch {
+        width: 10px;
+        height: 10px;
+        border: 1px solid rgba(24, 43, 58, 0.08);
+        border-radius: 3px;
+      }
+
+      .travel-color {
+        background: var(--blue-pale);
+      }
+
+      .unload-color {
+        background: #c9e9df;
+      }
+
+      .return-color {
+        background: var(--purple-pale);
+      }
+
+      .wash-color {
+        background: var(--amber-pale);
+      }
+
+      .timeline-scroll {
+        overflow-x: auto;
+        padding: 0 14px 14px;
+        scrollbar-color: #bccbc8 #f3f6f7;
+        scrollbar-width: thin;
+      }
+
+      .timeline-scroll:focus-visible {
+        outline-offset: -3px;
+      }
+
+      .timeline-canvas {
+        min-width: 740px;
+      }
+
+      .time-ruler {
+        position: relative;
+        height: 25px;
+        margin-left: 122px;
+        border-bottom: 1px solid #dfe5e8;
+        color: #74818c;
+        font-size: 9px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .time-tick {
+        position: absolute;
+        bottom: 4px;
+        transform: translateX(-50%);
+        white-space: nowrap;
+      }
+
+      .time-tick.first {
+        transform: none;
+      }
+
+      .time-tick.last {
+        transform: translateX(-100%);
+      }
+
+      .schedule-row {
+        display: grid;
+        grid-template-columns: 122px minmax(0, 1fr);
+        min-height: 45px;
+        border-bottom: 1px solid #edf0f2;
+      }
+
+      .row-label {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1px;
+        padding: 5px 6px 5px 2px;
+        color: #3b4b58;
+        font-size: 10px;
+        line-height: 1.2;
+      }
+
+      .row-label strong {
+        font-size: 10px;
+      }
+
+      .row-label span {
+        color: #75828c;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .track {
+        display: grid;
+        grid-template-columns: repeat(150, minmax(0, 1fr));
+        align-items: center;
+        min-width: 0;
+        background-image: repeating-linear-gradient(
+          to right,
+          transparent 0,
+          transparent calc(100% / 15 - 1px),
+          #edf1f2 calc(100% / 15 - 1px),
+          #edf1f2 calc(100% / 15)
+        );
+      }
+
+      .segment {
+        z-index: 1;
+        display: flex;
+        overflow: hidden;
+        height: 25px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(40, 61, 76, 0.12);
+        border-radius: 4px;
+        color: #334756;
+        font-size: 8px;
+        font-weight: 750;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .segment.travel {
+        background: var(--blue-pale);
+        color: var(--blue-ink);
+      }
+
+      .segment.unload {
+        background: #c9e9df;
+        color: #155e52;
+      }
+
+      .segment.return {
+        background: var(--purple-pale);
+        color: var(--purple-ink);
+      }
+
+      .segment.wash {
+        background: var(--amber-pale);
+        color: var(--amber-ink);
+        font-size: 7px;
+      }
+
+      .schedule-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 11px 17px 14px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .duration-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--teal-dark);
+        font-weight: 700;
+      }
+
+      .duration-note::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #2e8c7c;
+        content: "";
+      }
+
+      .order-panel {
+        padding-bottom: 15px;
+      }
+
+      .order-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 14px;
+        padding: 0 17px;
+      }
+
+      .order-text {
+        margin: 0;
+        padding: 12px 13px;
+        border: 1px solid #e6eaed;
+        border-radius: 9px;
+        background: #f8fafb;
+        color: #33424e;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 11px;
+        line-height: 1.65;
+        white-space: pre-wrap;
+      }
+
+      .copy-button,
+      .draw-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 39px;
+        padding: 9px 13px;
+        border: 1px solid var(--teal);
+        border-radius: 8px;
+        background: var(--teal);
+        color: #fff;
+        cursor: default;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .draw-button {
+        min-height: 32px;
+        padding: 7px 10px;
+        border-color: #c9dfd9;
+        background: #f3faf7;
+        color: var(--teal-dark);
+        font-size: 11px;
+      }
+
+      .copy-button svg,
+      .draw-button svg {
+        width: 15px;
+        height: 15px;
+        flex: 0 0 auto;
+      }
+
+      .copy-note {
+        margin: 9px 17px 0;
+        color: #7a8791;
+        font-size: 10px;
+      }
+
+      .page-foot {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 19px 2px 0;
+        color: #7b8790;
+        font-size: 10px;
+      }
+
+      .sr-only {
+        position: absolute;
+        overflow: hidden;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        border: 0;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+      }
+
+      @media (max-width: 1050px) {
+        .workspace {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .left-column,
+        .results-column {
+          gap: 16px;
+        }
+
+        .results-column {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      @media (max-width: 620px) {
+        .topbar {
+          align-items: flex-start;
+          padding: 15px 16px;
+        }
+
+        .topbar-meta {
+          gap: 0;
+        }
+
+        .location-pill {
+          display: none;
+        }
+
+        h1 {
+          font-size: 18px;
+        }
+
+        main {
+          padding: 15px 12px 24px;
+        }
+
+        .workspace {
+          gap: 15px;
+        }
+
+        .panel-head {
+          padding: 14px 14px 12px;
+        }
+
+        .map-toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 7px;
+        }
+
+        .mode-switch button {
+          padding: 6px 7px;
+          font-size: 10px;
+        }
+
+        .map-frame {
+          margin: 0 9px;
+          min-height: 250px;
+        }
+
+        .map-art {
+          height: 270px;
+        }
+
+        .map-note {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 9px 13px 13px;
+        }
+
+        .field-grid {
+          gap: 9px;
+        }
+
+        .input-form {
+          padding: 0 13px;
+        }
+
+        .summary-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 9px;
+        }
+
+        .summary-card {
+          min-height: 92px;
+          padding: 12px;
+        }
+
+        .summary-card:last-child {
+          grid-column: span 2;
+          min-height: 78px;
+        }
+
+        .summary-label {
+          margin-bottom: 8px;
+        }
+
+        .summary-value {
+          font-size: 23px;
+        }
+
+        .schedule-panel .panel-head {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 7px;
+        }
+
+        .schedule-foot {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .order-content {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .copy-button {
+          width: 100%;
+        }
+
+        .page-foot {
+          flex-direction: column;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 17.5 12 4l8 13.5H4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M8 17.5v-4h8v4M10 13.5V10h4v3.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <p class="brand-kicker">Pour planning</p>
+          <h1>Concrete pour planner</h1>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <span class="location-pill"><span class="location-dot"></span>BYU campus · Provo, UT</span>
+        <span class="mockup-pill">Stage 1 mockup</span>
+      </div>
+    </header>
+
+    <main>
+      <aside class="preview-notice" aria-label="Mockup notice">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M12 10.5v5M12 7.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <p><strong>Static layout preview.</strong> Inputs, map controls, schedule, and sample results are shown for review; they are not connected and do not calculate.</p>
+      </aside>
+
+      <div class="workspace">
+        <section class="left-column" aria-label="Slab map and pour inputs">
+          <section class="panel map-panel" aria-labelledby="map-title">
+            <div class="panel-head">
+              <div>
+                <h2 id="map-title">Slab footprint</h2>
+                <p class="panel-subtitle">BYU campus · 40.2518, -111.6493</p>
+              </div>
+              <div class="map-toolbar">
+                <div class="mode-switch" aria-label="Geometry entry mode">
+                  <button type="button" aria-pressed="false">Draw on map</button>
+                  <button type="button" aria-pressed="true">Enter dimensions</button>
+                </div>
+                <button class="draw-button" type="button" aria-label="Draw slab (mockup only)">
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="m4 14.8-.7 2.8 2.8-.7L16.5 6.5 13.5 3.5 4 14.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="m11.9 5.1 3 3" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                  Draw slab
+                </button>
+              </div>
+            </div>
+
+            <div class="map-frame" role="img" aria-label="Static map preview centered near BYU campus with a 40 by 60 foot slab outline, area 2,400 square feet, and order volume 47 cubic yards">
+              <svg class="map-art" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <rect width="900" height="560" fill="#e6ebdf"/>
+                <path d="M0 75 250 0h145l-56 113L0 190ZM630 0h270v148l-214 40-96-89ZM0 416l228-83 111 126-139 101H0ZM655 405l245-80v235H594Z" fill="#d8e5d0"/>
+                <path d="M0 250h900M0 380h900M245 0v560M610 0v560" stroke="#fffdf8" stroke-width="33"/>
+                <path d="M0 250h900M0 380h900M245 0v560M610 0v560" stroke="#d3d8d1" stroke-width="2"/>
+                <path d="M66 0v560M410 0v560M790 0v560M0 130h900M0 490h900" stroke="#f8f7f1" stroke-width="17"/>
+                <path d="M66 0v560M410 0v560M790 0v560M0 130h900M0 490h900" stroke="#d5d9d3" stroke-width="1.5"/>
+                <g fill="#c6d6c1" opacity=".8">
+                  <rect x="95" y="158" width="104" height="60" rx="8"/>
+                  <rect x="285" y="155" width="103" height="64" rx="8"/>
+                  <rect x="447" y="155" width="133" height="64" rx="8"/>
+                  <rect x="664" y="158" width="101" height="61" rx="8"/>
+                  <rect x="103" y="284" width="94" height="70" rx="8"/>
+                  <rect x="286" y="282" width="99" height="72" rx="8"/>
+                  <rect x="451" y="280" width="130" height="75" rx="8"/>
+                  <rect x="667" y="283" width="93" height="70" rx="8"/>
+                </g>
+                <g fill="#7b8982" font-family="system-ui, sans-serif" font-size="12" font-weight="650" letter-spacing="1.5">
+                  <text x="286" y="244">UNIVERSITY AVE</text>
+                  <text x="284" y="374">CAMPUS DRIVE</text>
+                  <text x="78" y="118">CAMPUS</text>
+                  <text x="674" y="470">PROVO</text>
+                </g>
+                <path d="M0 451c150-42 254-17 366-58s239-79 534-72" fill="none" stroke="#d7c8aa" stroke-width="11"/>
+                <path d="M0 451c150-42 254-17 366-58s239-79 534-72" fill="none" stroke="#fff9ee" stroke-width="7"/>
+                <g>
+                  <path d="M333 186h205v147H333z" fill="#6cc5b9" fill-opacity=".29" stroke="#0f716b" stroke-width="4"/>
+                  <circle cx="333" cy="186" r="8" fill="#fff" stroke="#0f716b" stroke-width="4"/>
+                  <circle cx="538" cy="186" r="8" fill="#fff" stroke="#0f716b" stroke-width="4"/>
+                  <circle cx="538" cy="333" r="8" fill="#fff" stroke="#0f716b" stroke-width="4"/>
+                  <circle cx="333" cy="333" r="8" fill="#fff" stroke="#0f716b" stroke-width="4"/>
+                  <rect x="376" y="232" width="120" height="60" rx="8" fill="#fff" stroke="#dce8e4"/>
+                  <text x="436" y="247" text-anchor="middle" fill="#52635d" font-family="system-ui, sans-serif" font-size="8" font-weight="700" letter-spacing=".7">SLAB AREA</text>
+                  <text x="436" y="262" text-anchor="middle" fill="#165e57" font-family="system-ui, sans-serif" font-size="11" font-weight="800">2,400 ft²</text>
+                  <text x="436" y="279" text-anchor="middle" fill="#52635d" font-family="system-ui, sans-serif" font-size="8" font-weight="750">ORDER 47.0 cy</text>
+                </g>
+              </svg>
+              <div class="map-tag">Map preview · imagery loads in a later stage</div>
+              <div class="map-tools" aria-hidden="true">
+                <span>+</span>
+                <span>&minus;</span>
+              </div>
+              <div class="map-compass" aria-hidden="true">N</div>
+            </div>
+            <div class="map-note">
+              <strong>Static 40 ft &times; 60 ft rectangle</strong>
+              <span class="map-legend"><span class="outline-key"></span>Slab outline</span>
+            </div>
+          </section>
+
+          <section class="panel inputs-panel" aria-labelledby="inputs-title">
+            <div class="panel-head">
+              <div>
+                <h2 id="inputs-title">Pour inputs</h2>
+                <p class="panel-subtitle">Starting values from the project spec</p>
+              </div>
+              <span class="default-pill">Default values</span>
+            </div>
+
+            <form class="input-form" aria-label="Static input mockup">
+              <section class="field-group" aria-labelledby="geometry-fields">
+                <h3 class="field-group-title" id="geometry-fields">Slab dimensions</h3>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="slab-length">Length</label>
+                    <div class="input-wrap">
+                      <input id="slab-length" type="number" value="40" min="1" max="50" step="1">
+                      <span class="unit">ft</span>
+                    </div>
+                    <span class="field-hint">Range: 1-50 ft</span>
+                  </div>
+                  <div class="field">
+                    <label for="slab-width">Width</label>
+                    <div class="input-wrap">
+                      <input id="slab-width" type="number" value="60" min="1" max="100" step="1">
+                      <span class="unit">ft</span>
+                    </div>
+                    <span class="field-hint">Range: 1-100 ft</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="field-group" aria-labelledby="mix-fields">
+                <h3 class="field-group-title" id="mix-fields">Concrete and crew</h3>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="thickness">Slab thickness</label>
+                    <div class="input-wrap">
+                      <input id="thickness" type="number" value="6" min="1" max="24" step="1">
+                      <span class="unit">in</span>
+                    </div>
+                    <span class="field-hint">Range: 1-24 in</span>
+                  </div>
+                  <div class="field">
+                    <label for="waste">Waste allowance</label>
+                    <div class="input-wrap">
+                      <input id="waste" type="number" value="5" min="0" max="60" step="1">
+                      <span class="unit">%</span>
+                    </div>
+                    <span class="field-hint">Range: 0-60%</span>
+                  </div>
+                  <div class="field">
+                    <label for="capacity">Truck capacity</label>
+                    <div class="input-wrap">
+                      <input id="capacity" type="number" value="10" min="1" max="12" step="1">
+                      <span class="unit">cy</span>
+                    </div>
+                    <span class="field-hint">Range: 1-12 cy</span>
+                  </div>
+                  <div class="field">
+                    <label for="placement-rate">Placement rate</label>
+                    <div class="input-wrap">
+                      <input id="placement-rate" type="number" value="30" min="1" max="250" step="1">
+                      <span class="unit">cy/hr</span>
+                    </div>
+                    <span class="field-hint">Range: 1-250 cy/hr</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="field-group" aria-labelledby="delivery-fields">
+                <h3 class="field-group-title" id="delivery-fields">Truck delivery</h3>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="travel-time">One-way travel time</label>
+                    <div class="input-wrap">
+                      <input id="travel-time" type="number" value="20" min="0" max="300" step="1">
+                      <span class="unit">min</span>
+                    </div>
+                    <span class="field-hint">Range: 0-300 min</span>
+                  </div>
+                  <div class="field">
+                    <label for="washout-time">Washout and reload</label>
+                    <div class="input-wrap">
+                      <input id="washout-time" type="number" value="10" min="0" max="100" step="1">
+                      <span class="unit">min</span>
+                    </div>
+                    <span class="field-hint">Range: 0-100 min</span>
+                  </div>
+                  <div class="field single-field">
+                    <label for="first-arrival">First truck arrival</label>
+                    <div class="input-wrap">
+                      <input id="first-arrival" type="time" value="07:00">
+                    </div>
+                    <span class="field-hint">Jobsite local time</span>
+                  </div>
+                </div>
+              </section>
+            </form>
+
+            <div class="hint-box">
+              <span class="hint-icon" aria-hidden="true">i</span>
+              <span><strong>Ready to plan?</strong>Draw the slab on the map or enter its dimensions to see the pour plan.</span>
+            </div>
+          </section>
+        </section>
+
+        <section class="results-column" aria-label="Static sample results">
+          <section class="summary-grid" aria-label="Pour summary">
+            <article class="summary-card primary">
+              <span class="summary-label">Concrete to order</span>
+              <strong class="summary-value">47.0 <small>cy</small></strong>
+            </article>
+            <article class="summary-card">
+              <span class="summary-label">Truckloads</span>
+              <strong class="summary-value">5</strong>
+            </article>
+            <article class="summary-card">
+              <span class="summary-label">Trucks in rotation</span>
+              <strong class="summary-value">4</strong>
+            </article>
+            <article class="summary-card">
+              <span class="summary-label">Pour duration</span>
+              <strong class="summary-value">1 <small>h</small> 34 <small>min</small></strong>
+            </article>
+            <article class="summary-card">
+              <span class="summary-label">Estimated finish</span>
+              <strong class="summary-value">8:34 <small>AM</small></strong>
+            </article>
+          </section>
+
+          <section class="panel schedule-panel" aria-labelledby="schedule-title">
+            <div class="panel-head">
+              <div>
+                <h2 id="schedule-title">Truck schedule</h2>
+                <p class="panel-subtitle">A continuous delivery plan · sample timeline</p>
+              </div>
+              <span class="schedule-meta"><span class="meta-dot"></span>20 min arrival spacing</span>
+            </div>
+            <div class="legend" aria-label="Schedule activity legend">
+              <span class="legend-item"><span class="legend-swatch travel-color"></span>Travel to site</span>
+              <span class="legend-item"><span class="legend-swatch unload-color"></span>Unloading</span>
+              <span class="legend-item"><span class="legend-swatch return-color"></span>Travel back</span>
+              <span class="legend-item"><span class="legend-swatch wash-color"></span>Washout/reload</span>
+            </div>
+            <div class="timeline-scroll" tabindex="0" aria-label="Scrollable static truck schedule">
+              <div class="timeline-canvas">
+                <div class="time-ruler" aria-hidden="true">
+                  <span class="time-tick first" style="left: 0%">6:40 AM</span>
+                  <span class="time-tick" style="left: 13.333%">7:00</span>
+                  <span class="time-tick" style="left: 26.667%">7:20</span>
+                  <span class="time-tick" style="left: 40%">7:40</span>
+                  <span class="time-tick" style="left: 53.333%">8:00</span>
+                  <span class="time-tick" style="left: 66.667%">8:20</span>
+                  <span class="time-tick" style="left: 80%">8:40</span>
+                  <span class="time-tick" style="left: 93.333%">9:00</span>
+                  <span class="time-tick last" style="left: 100%">9:10</span>
+                </div>
+
+                <div class="schedule-row">
+                  <div class="row-label"><strong>Load 1 · Truck 1</strong><span>10 cy · arrives 7:00</span></div>
+                  <div class="track">
+                    <span class="segment travel" style="grid-column: 1 / 21" title="Travel to site, 6:40-7:00 AM" aria-label="Travel to site, 6:40 to 7:00 AM"><span aria-hidden="true">To site</span></span>
+                    <span class="segment unload" style="grid-column: 21 / 41" title="Unloading, 7:00-7:20 AM" aria-label="Unloading, 7:00 to 7:20 AM"><span aria-hidden="true">Unload</span></span>
+                    <span class="segment return" style="grid-column: 41 / 61" title="Travel back, 7:20-7:40 AM" aria-label="Travel back, 7:20 to 7:40 AM"><span aria-hidden="true">Return</span></span>
+                    <span class="segment wash" style="grid-column: 61 / 71" title="Washout/reload, 7:40-7:50 AM" aria-label="Washout and reload, 7:40 to 7:50 AM"><span aria-hidden="true">Wash</span></span>
+                  </div>
+                </div>
+                <div class="schedule-row">
+                  <div class="row-label"><strong>Load 2 · Truck 2</strong><span>10 cy · arrives 7:20</span></div>
+                  <div class="track">
+                    <span class="segment travel" style="grid-column: 21 / 41" title="Travel to site, 7:00-7:20 AM" aria-label="Travel to site, 7:00 to 7:20 AM"><span aria-hidden="true">To site</span></span>
+                    <span class="segment unload" style="grid-column: 41 / 61" title="Unloading, 7:20-7:40 AM" aria-label="Unloading, 7:20 to 7:40 AM"><span aria-hidden="true">Unload</span></span>
+                    <span class="segment return" style="grid-column: 61 / 81" title="Travel back, 7:40-8:00 AM" aria-label="Travel back, 7:40 to 8:00 AM"><span aria-hidden="true">Return</span></span>
+                    <span class="segment wash" style="grid-column: 81 / 91" title="Washout/reload, 8:00-8:10 AM" aria-label="Washout and reload, 8:00 to 8:10 AM"><span aria-hidden="true">Wash</span></span>
+                  </div>
+                </div>
+                <div class="schedule-row">
+                  <div class="row-label"><strong>Load 3 · Truck 3</strong><span>10 cy · arrives 7:40</span></div>
+                  <div class="track">
+                    <span class="segment travel" style="grid-column: 41 / 61" title="Travel to site, 7:20-7:40 AM" aria-label="Travel to site, 7:20 to 7:40 AM"><span aria-hidden="true">To site</span></span>
+                    <span class="segment unload" style="grid-column: 61 / 81" title="Unloading, 7:40-8:00 AM" aria-label="Unloading, 7:40 to 8:00 AM"><span aria-hidden="true">Unload</span></span>
+                    <span class="segment return" style="grid-column: 81 / 101" title="Travel back, 8:00-8:20 AM" aria-label="Travel back, 8:00 to 8:20 AM"><span aria-hidden="true">Return</span></span>
+                    <span class="segment wash" style="grid-column: 101 / 111" title="Washout/reload, 8:20-8:30 AM" aria-label="Washout and reload, 8:20 to 8:30 AM"><span aria-hidden="true">Wash</span></span>
+                  </div>
+                </div>
+                <div class="schedule-row">
+                  <div class="row-label"><strong>Load 4 · Truck 4</strong><span>10 cy · arrives 8:00</span></div>
+                  <div class="track">
+                    <span class="segment travel" style="grid-column: 61 / 81" title="Travel to site, 7:40-8:00 AM" aria-label="Travel to site, 7:40 to 8:00 AM"><span aria-hidden="true">To site</span></span>
+                    <span class="segment unload" style="grid-column: 81 / 101" title="Unloading, 8:00-8:20 AM" aria-label="Unloading, 8:00 to 8:20 AM"><span aria-hidden="true">Unload</span></span>
+                    <span class="segment return" style="grid-column: 101 / 121" title="Travel back, 8:20-8:40 AM" aria-label="Travel back, 8:20 to 8:40 AM"><span aria-hidden="true">Return</span></span>
+                    <span class="segment wash" style="grid-column: 121 / 131" title="Washout/reload, 8:40-8:50 AM" aria-label="Washout and reload, 8:40 to 8:50 AM"><span aria-hidden="true">Wash</span></span>
+                  </div>
+                </div>
+                <div class="schedule-row">
+                  <div class="row-label"><strong>Load 5 · Truck 1</strong><span>7 cy · arrives 8:20</span></div>
+                  <div class="track">
+                    <span class="segment travel" style="grid-column: 81 / 101" title="Travel to site, 8:00-8:20 AM" aria-label="Travel to site, 8:00 to 8:20 AM"><span aria-hidden="true">To site</span></span>
+                    <span class="segment unload" style="grid-column: 101 / 115" title="Unloading, 8:20-8:34 AM" aria-label="Unloading, 8:20 to 8:34 AM"><span aria-hidden="true">Unload</span></span>
+                    <span class="segment return" style="grid-column: 115 / 135" title="Travel back, 8:34-8:54 AM" aria-label="Travel back, 8:34 to 8:54 AM"><span aria-hidden="true">Return</span></span>
+                    <span class="segment wash" style="grid-column: 135 / 145" title="Washout/reload, 8:54-9:04 AM" aria-label="Washout and reload, 8:54 to 9:04 AM"><span aria-hidden="true">Wash</span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="schedule-foot">
+              <span>Times are jobsite local · segment times shown for layout only</span>
+              <span class="duration-note">Pour complete 8:34 AM</span>
+            </div>
+          </section>
+
+          <section class="panel order-panel" aria-labelledby="order-title">
+            <div class="panel-head">
+              <div>
+                <h2 id="order-title">Order summary</h2>
+                <p class="panel-subtitle">Plain-text order for the batch plant</p>
+              </div>
+            </div>
+            <div class="order-content">
+              <pre class="order-text">CONCRETE ORDER: 47.0 CY
+Loads: 5 (4 x 10 cy, 1 x 7 cy)
+First jobsite arrival: 7:00 AM
+Arrival spacing: every 20 minutes</pre>
+              <button class="copy-button" type="button" aria-label="Copy order summary (mockup only)">
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <rect x="7" y="6" width="9" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M12.5 6V4.5A1.5 1.5 0 0 0 11 3H5.5A1.5 1.5 0 0 0 4 4.5v8A1.5 1.5 0 0 0 5.5 14H7" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Copy order
+              </button>
+            </div>
+            <p class="copy-note">Copy confirmation will appear here in a later stage.</p>
+          </section>
+        </section>
+      </div>
+
+      <footer class="page-foot">
+        <span>Concrete pour planner · Static Stage 1 mockup</span>
+        <span>Sample values are for layout review only</span>
+      </footer>
+    </main>
+  </body>
+</html>
