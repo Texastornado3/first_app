@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Static layout mockup for a concrete pour planning app.">
+    <meta name="description" content="Plan concrete slab orders and truck delivery schedules.">
     <title>Concrete Pour Planner</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
@@ -116,7 +116,6 @@
       }
 
       .location-pill,
-      .mockup-pill,
       .default-pill {
         display: inline-flex;
         align-items: center;
@@ -138,40 +137,10 @@
         background: var(--teal);
       }
 
-      .mockup-pill {
-        border-color: #e7c77f;
-        background: #fff8e9;
-        color: #76520e;
-      }
-
       main {
         width: min(1540px, 100%);
         margin: 0 auto;
         padding: 22px 26px 34px;
-      }
-
-      .preview-notice {
-        display: flex;
-        align-items: flex-start;
-        gap: 11px;
-        margin-bottom: 18px;
-        padding: 12px 15px;
-        border: 1px solid #efd89c;
-        border-radius: 12px;
-        background: #fff9eb;
-        color: #5f4b24;
-        font-size: 13px;
-      }
-
-      .preview-notice svg {
-        width: 18px;
-        height: 18px;
-        flex: 0 0 auto;
-        color: #9c7016;
-      }
-
-      .preview-notice p {
-        margin: 0;
       }
 
       .workspace {
@@ -238,7 +207,7 @@
         border-radius: 7px;
         background: transparent;
         color: var(--muted);
-        cursor: default;
+        cursor: pointer;
         font-size: 11px;
         font-weight: 700;
         padding: 7px 9px;
@@ -856,7 +825,7 @@
         border-radius: 8px;
         background: var(--teal);
         color: #fff;
-        cursor: default;
+        cursor: pointer;
         font-size: 12px;
         font-weight: 700;
         white-space: nowrap;
@@ -887,6 +856,16 @@
         margin: 9px 17px 0;
         color: #7a8791;
         font-size: 10px;
+      }
+
+      .copy-note.success {
+        color: var(--teal-dark);
+        font-weight: 650;
+      }
+
+      .copy-note.error {
+        color: #8a2119;
+        font-weight: 650;
       }
 
       .page-foot {
@@ -1064,19 +1043,10 @@
       </div>
       <div class="topbar-meta">
         <span class="location-pill"><span class="location-dot"></span>BYU campus · Provo, UT</span>
-        <span class="mockup-pill">Stage 4 schedule</span>
       </div>
     </header>
 
     <main>
-      <aside class="preview-notice" aria-label="Mockup notice">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
-          <path d="M12 10.5v5M12 7.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <p><strong>Interactive slab mapping is active.</strong> The truck timeline updates from the current slab and delivery inputs.</p>
-      </aside>
-
       <div class="workspace">
         <section class="left-column" aria-label="Slab map and pour inputs">
           <section class="panel map-panel" aria-labelledby="map-title">
@@ -1281,7 +1251,7 @@
 Loads: 5 (4 x 10 cy, 1 x 7 cy)
 First jobsite arrival: 7:00 AM
 Arrival spacing: every 20 minutes</pre>
-              <button class="copy-button" type="button" aria-label="Copy order summary (available in a later stage)" disabled>
+              <button class="copy-button" id="copy-order-button" type="button" aria-label="Copy concrete order to clipboard" disabled>
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <rect x="7" y="6" width="9" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
                   <path d="M12.5 6V4.5A1.5 1.5 0 0 0 11 3H5.5A1.5 1.5 0 0 0 4 4.5v8A1.5 1.5 0 0 0 5.5 14H7" stroke="currentColor" stroke-width="1.5"/>
@@ -1289,13 +1259,13 @@ Arrival spacing: every 20 minutes</pre>
                 Copy order
               </button>
             </div>
-            <p class="copy-note">The order text updates with valid inputs; copying is added in a later stage.</p>
+            <p class="copy-note" id="copy-feedback" role="status" aria-live="polite" aria-atomic="true" hidden></p>
           </section>
         </section>
       </div>
 
       <footer class="page-foot">
-        <span>Concrete pour planner · Stage 4 live truck schedule</span>
+        <span>Concrete pour planner</span>
         <span>Schedule updates with current inputs</span>
       </footer>
     </main>
@@ -1321,6 +1291,8 @@ Arrival spacing: every 20 minutes</pre>
         finishTime: document.getElementById("finish-time-output"),
         arrivalSpacing: document.getElementById("arrival-spacing-output"),
         orderSummary: document.getElementById("order-summary-output"),
+        copyOrderButton: document.getElementById("copy-order-button"),
+        copyFeedback: document.getElementById("copy-feedback"),
         timelineCanvas: document.getElementById("timeline-canvas"),
         timelineRuler: document.getElementById("timeline-ruler"),
         timelineRows: document.getElementById("timeline-rows"),
@@ -1378,6 +1350,7 @@ Arrival spacing: every 20 minutes</pre>
       let isDrawingPolygon = false;
       let geometryError = "";
       let lastValidPolygonVertices = null;
+      let copyFeedbackVersion = 0;
 
       function setMapFeedback(message, isError = false) {
         outputElements.mapFeedback.textContent = message;
@@ -2221,6 +2194,87 @@ Arrival spacing: every 20 minutes</pre>
         return `${fullLoadText}1 x ${formatQuantity(plan.finalLoadVolumeCy)} cy`;
       }
 
+      function clearCopyFeedback() {
+        copyFeedbackVersion += 1;
+        outputElements.copyFeedback.hidden = true;
+        outputElements.copyFeedback.textContent = "";
+        outputElements.copyFeedback.classList.remove("success", "error");
+      }
+
+      function showCopyFeedback(message, status) {
+        outputElements.copyFeedback.textContent = message;
+        outputElements.copyFeedback.classList.remove("success", "error");
+        outputElements.copyFeedback.classList.add(status);
+        outputElements.copyFeedback.hidden = false;
+      }
+
+      async function writeTextToClipboard(text) {
+        let clipboardWriteError = null;
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          try {
+            await navigator.clipboard.writeText(text);
+            return;
+          } catch (error) {
+            clipboardWriteError = error;
+          }
+        }
+
+        if (typeof document.execCommand !== "function") {
+          throw clipboardWriteError ||
+            new Error("Clipboard access is unavailable in this browser.");
+        }
+
+        const textArea = document.createElement("textarea");
+        const previousFocus = document.activeElement;
+        textArea.value = text;
+        textArea.setAttribute("readonly", "");
+        textArea.setAttribute("aria-hidden", "true");
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.opacity = "0";
+        document.body.append(textArea);
+
+        let copied = false;
+        try {
+          textArea.select();
+          copied = document.execCommand("copy");
+        } finally {
+          textArea.remove();
+          if (previousFocus instanceof HTMLElement) {
+            previousFocus.focus({ preventScroll: true });
+          }
+        }
+
+        if (!copied) {
+          throw clipboardWriteError ||
+            new Error("The browser did not copy the order text.");
+        }
+      }
+
+      async function copyOrderSummary() {
+        if (outputElements.copyOrderButton.disabled) {
+          return;
+        }
+
+        clearCopyFeedback();
+        const orderText = outputElements.orderSummary.textContent.trim();
+        const feedbackVersion = copyFeedbackVersion;
+        try {
+          await writeTextToClipboard(orderText);
+          if (feedbackVersion === copyFeedbackVersion) {
+            showCopyFeedback("Order copied to clipboard.", "success");
+          }
+        } catch (error) {
+          console.error("Could not copy the concrete order.", error);
+          if (feedbackVersion === copyFeedbackVersion) {
+            showCopyFeedback(
+              "Could not copy the order. Select and copy the text manually.",
+              "error"
+            );
+          }
+        }
+      }
+
       function createTimelineSegment(segment, axis) {
         const button = document.createElement("button");
         const startPercent =
@@ -2327,6 +2381,8 @@ Arrival spacing: every 20 minutes</pre>
         outputElements.finishTime.textContent = "--";
         outputElements.arrivalSpacing.textContent = "Arrival spacing unavailable";
         outputElements.orderSummary.textContent = "Order summary unavailable until all inputs are valid.";
+        outputElements.copyOrderButton.disabled = true;
+        clearCopyFeedback();
         clearMeasurementMarker();
         clearTruckSchedule();
       }
@@ -2346,6 +2402,8 @@ Arrival spacing: every 20 minutes</pre>
           `First jobsite arrival: ${formatClockTime(values.firstArrivalMinutes)}`,
           `Arrival spacing: every ${roundDisplayedMinutes(plan.arrivalSpacingMinutes)} minutes`
         ].join("\n");
+        outputElements.copyOrderButton.disabled = false;
+        clearCopyFeedback();
       }
 
       function updatePourSummary() {
@@ -2378,6 +2436,7 @@ Arrival spacing: every 20 minutes</pre>
       document.getElementById("pour-inputs").addEventListener("submit", event => {
         event.preventDefault();
       });
+      outputElements.copyOrderButton.addEventListener("click", copyOrderSummary);
 
       function addDrawingVertex(latLng) {
         if (!isDrawingPolygon) {
